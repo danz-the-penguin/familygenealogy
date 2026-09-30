@@ -1,0 +1,47 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies & Build Outputs
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor & System Files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+Thumbs.db
+
+# ==============================================================================
+# 🔒 SENSITIVE PRIVATE FAMILY DATA (DO NOT COMMIT REAL DATA TO PUBLIC GITHUB)
+# ==============================================================================
+# Your actual personal family tree records are stored in data/family.json:
+data/family.json
+data/*.private.json
+
+# Always preserve the template example for users who clone the repo:
+!data/family.example.json
+
+# ==============================================================================
+# 🔐 ENVIRONMENT VARIABLES & SECRETS (DO NOT COMMIT PASSWORDS / KEYS)
+# ==============================================================================
+.env
+.env.local
+.env.*.local
+*.env
+
+# Always preserve the environment template:
+!.env.example

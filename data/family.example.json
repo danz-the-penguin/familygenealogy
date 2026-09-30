@@ -1,0 +1,190 @@
+{
+  "meta": {
+    "title": "Family Tree Template (族谱模板)",
+    "lastUpdated": "2026-09-30T00:00:00.000Z",
+    "description": "Clean template for family genealogy, supporting multiple marriages, patronymics, Chinese kin terms, and media gallery."
+  },
+  "persons": [
+    {
+      "id": "p-sample-1",
+      "firstName": "Grandfather",
+      "lastName": "Smith",
+      "maidenName": "",
+      "patronymic": "",
+      "christianName": "John",
+      "chineseName": "史约翰",
+      "gender": "male",
+      "ethnicity": "Anglo-Saxon",
+      "adoptionStatus": "biological",
+      "birthDate": "1930",
+      "birthYearOnly": true,
+      "birthPlace": "London, UK",
+      "deathDate": "2015",
+      "deathYearOnly": true,
+      "deathPlace": "Manchester, UK",
+      "burialPlace": "St. Paul Cemetery",
+      "isLiving": false,
+      "occupation": "Teacher",
+      "bio": "Patriarch of the family, passionate educator and gardener.",
+      "avatar": "",
+      "religions": [
+        {
+          "id": "relig-1",
+          "name": "Christianity (Anglican)",
+          "startDate": "1930",
+          "endDate": "2015",
+          "isFinal": true,
+          "isDeathbedConversion": false,
+          "notes": "Lifelong parishioner"
+        }
+      ],
+      "parents": [],
+      "spouses": [
+        "p-sample-2"
+      ],
+      "partnerDetails": {
+        "p-sample-2": {
+          "status": "first_spouse",
+          "marriageState": "death",
+          "marriageDate": "1954",
+          "marriagePlace": "London",
+          "notes": "Golden wedding anniversary in 2004"
+        }
+      },
+      "children": [
+        "p-sample-3"
+      ],
+      "tags": [
+        "Veteran",
+        "Educator"
+      ],
+      "references": [
+        {
+          "id": "ref-1",
+          "title": "1939 Register UK",
+          "url": "https://example.com/record",
+          "type": "census",
+          "notes": "Volume 4, Page 12"
+        }
+      ]
+    },
+    {
+      "id": "p-sample-2",
+      "firstName": "Grandmother",
+      "lastName": "Smith",
+      "maidenName": "Miller",
+      "patronymic": "",
+      "christianName": "Mary",
+      "chineseName": "史玛丽",
+      "gender": "female",
+      "ethnicity": "Scottish",
+      "adoptionStatus": "biological",
+      "birthDate": "1932",
+      "birthYearOnly": true,
+      "birthPlace": "Edinburgh, Scotland",
+      "deathDate": "2018",
+      "deathYearOnly": true,
+      "deathPlace": "Manchester, UK",
+      "burialPlace": "St. Paul Cemetery",
+      "isLiving": false,
+      "occupation": "Nurse",
+      "bio": "Devoted mother and healthcare worker during post-war years.",
+      "avatar": "",
+      "religions": [
+        {
+          "id": "relig-2",
+          "name": "Christianity (Presbyterian)",
+          "startDate": "1932",
+          "endDate": "2018",
+          "isFinal": true,
+          "isDeathbedConversion": false,
+          "notes": ""
+        }
+      ],
+      "parents": [],
+      "spouses": [
+        "p-sample-1"
+      ],
+      "partnerDetails": {
+        "p-sample-1": {
+          "status": "first_spouse",
+          "marriageState": "death",
+          "marriageDate": "1954",
+          "marriagePlace": "London",
+          "notes": ""
+        }
+      },
+      "children": [
+        "p-sample-3"
+      ],
+      "tags": [
+        "Nurse"
+      ],
+      "references": []
+    },
+    {
+      "id": "p-sample-3",
+      "firstName": "Father",
+      "lastName": "Smith",
+      "maidenName": "",
+      "patronymic": "",
+      "christianName": "David",
+      "chineseName": "史大卫",
+      "gender": "male",
+      "ethnicity": "British",
+      "adoptionStatus": "biological",
+      "birthDate": "1960",
+      "birthYearOnly": true,
+      "birthPlace": "Manchester, UK",
+      "deathDate": "",
+      "deathYearOnly": false,
+      "deathPlace": "",
+      "burialPlace": "",
+      "isLiving": true,
+      "occupation": "Software Engineer",
+      "bio": "Pioneer in computing, avid photographer.",
+      "avatar": "",
+      "religions": [],
+      "parents": [
+        "p-sample-1",
+        "p-sample-2"
+      ],
+      "spouses": [],
+      "partnerDetails": {},
+      "children": [],
+      "tags": [
+        "Engineer"
+      ],
+      "references": []
+    }
+  ],
+  "relationships": [
+    {
+      "person1": "p-sample-1",
+      "person2": "p-sample-2",
+      "type": "marriage",
+      "status": "first_spouse",
+      "date": "1954",
+      "place": "London"
+    }
+  ],
+  "photos": [
+    {
+      "id": "photo-sample-1",
+      "url": "https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&auto=format&fit=crop&q=80",
+      "title": "Family Reunion Snapshot",
+      "date": "1975",
+      "place": "Manchester",
+      "caption": "A vintage portrait of the family during summer reunion.",
+      "tags": [
+        "Vintage",
+        "Reunion"
+      ],
+      "taggedPersonIds": [
+        "p-sample-1",
+        "p-sample-2",
+        "p-sample-3"
+      ]
+    }
+  ]
+}
