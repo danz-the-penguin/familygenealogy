@@ -47,17 +47,15 @@ export default function Navbar({
     return (
       <header className="win98-box z-30 shrink-0 select-none border-b-2 border-gray-400">
         {/* Win98 Top Window Titlebar */}
-        <div className="win98-title-navy px-2 py-0.5 flex items-center justify-between text-xs font-bold text-white">
+        <div className="win98-title-navy px-3 py-1 flex items-center justify-between text-xs font-bold text-white select-none">
           <div className="flex items-center space-x-2">
             <span className="text-sm">🌳</span>
             <span className="tracking-wide">
-              {lang === 'zh' ? '家族世系谱牒系统 1998' : 'Munang Family Genealogy & Kinship System 1998'} — [{persons.length} {lang === 'zh' ? '位族人资料' : 'Members Archive'}]
+              {lang === 'zh' ? '家族世系谱牒系统' : 'Family Genealogy & Kinship System'} — [{persons.length} {lang === 'zh' ? '位族人资料' : 'Members Archive'}]
             </span>
           </div>
-          <div className="flex items-center space-x-1">
-            <span className="win98-icon-btn">_</span>
-            <span className="win98-icon-btn">🗖</span>
-            <span className="win98-icon-btn">✕</span>
+          <div className="flex items-center space-x-2 text-[11px] font-mono opacity-85">
+            <span>{lang === 'zh' ? '世系档案库' : 'Heritage Archive'}</span>
           </div>
         </div>
 

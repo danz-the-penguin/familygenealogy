@@ -8,7 +8,8 @@ export default function DeleteConfirmModal({
   person,
   onConfirm,
   onClose,
-  lang = 'en'
+  lang = 'en',
+  theme = 'win98'
 }) {
   const t = translations[lang] || translations.en;
 
@@ -36,6 +37,97 @@ export default function DeleteConfirmModal({
   const parentsCount = (person.parents || []).length;
   const spousesCount = (person.spouses || []).length;
   const childrenCount = (person.children || []).length;
+
+  if (theme === 'win98') {
+    return (
+      <div 
+        className="fixed inset-0 z-[120] overflow-y-auto bg-black/50 backdrop-blur-none flex items-center justify-center p-4 animate-in fade-in duration-100"
+        onClick={onClose}
+      >
+        <div 
+          className="relative w-full max-w-md win98-box shadow-2xl overflow-hidden select-none"
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Win98 Titlebar */}
+          <div className="win98-title-rose px-3 py-1 flex items-center justify-between text-xs font-bold text-white">
+            <div className="flex items-center space-x-1.5">
+              <span>⚠️</span>
+              <span>{t.deleteConfirmTitle}</span>
+            </div>
+            <button 
+              onClick={onClose}
+              className="win98-btn px-2 py-0.2 text-xs font-bold text-black"
+              title="Close (Esc)"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="p-4 space-y-3.5 bg-[#c0c0c0]">
+            {/* Sunken Details Panel */}
+            <div className="win98-sunken p-3.5 bg-white text-black flex items-start space-x-3">
+              {person.avatar ? (
+                <img
+                  src={person.avatar}
+                  alt={formatFullName(person, lang)}
+                  className="w-12 h-12 rounded object-cover border border-gray-400 shrink-0"
+                />
+              ) : (
+                <div className="w-12 h-12 bg-neutral-200 border border-gray-400 rounded flex items-center justify-center text-black shrink-0 font-black text-xl">
+                  {person.gender === 'female' ? '♀' : '♂'}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-black text-black leading-snug break-words whitespace-normal">
+                  {formatFullName(person, lang)}
+                </h3>
+                <p className="text-xs font-extrabold text-neutral-800 mt-0.5">
+                  {getLifespan(person, lang)}
+                </p>
+                <div className="flex items-center space-x-2 mt-1.5 text-xs font-bold text-neutral-900">
+                  <span>{lang === 'zh' ? `父母: ${parentsCount}` : `Parents: ${parentsCount}`}</span>
+                  <span>•</span>
+                  <span>{lang === 'zh' ? `配偶: ${spousesCount}` : `Spouses: ${spousesCount}`}</span>
+                  <span>•</span>
+                  <span>{lang === 'zh' ? `子女: ${childrenCount}` : `Children: ${childrenCount}`}</span>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xs font-extrabold text-rose-900 leading-normal bg-rose-50 border border-rose-300 p-2.5 rounded">
+              {t.deleteConfirmWarning}
+            </p>
+
+            <div className="flex items-center justify-between text-xs font-bold text-neutral-800 px-1">
+              <span>{t.deleteConfirmEnterHint}</span>
+              <div className="flex items-center space-x-1.5">
+                <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-white border border-gray-400 text-black">Enter ↵</kbd>
+                <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-white border border-gray-400 text-black">Esc</kbd>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="pt-2 flex items-center justify-end space-x-2.5">
+              <button
+                type="button"
+                onClick={onClose}
+                className="win98-btn px-4 py-1 text-xs font-bold text-black"
+              >
+                {t.cancel}
+              </button>
+              <button
+                type="button"
+                onClick={onConfirm}
+                className="win98-btn px-5 py-1 text-xs font-black text-rose-900 bg-rose-100 hover:bg-rose-200"
+              >
+                {t.deleteMemberButton}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 

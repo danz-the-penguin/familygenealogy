@@ -167,6 +167,67 @@ export function extractYear(dateStr) {
 }
 
 /**
+ * Format date string verbosely: "Day, DD Month YYYY" (e.g. "Tuesday, 14 May 1968" or "1968年5月14日 星期二")
+ * Handles YYYY-MM-DD, YYYY-MM, or YYYY.
+ */
+export function formatVerboseDate(rawDate, lang = 'en') {
+  if (!rawDate) return '';
+  const str = String(rawDate).trim();
+  
+  // Match full YYYY-MM-DD
+  const fullMatch = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (fullMatch) {
+    const year = parseInt(fullMatch[1], 10);
+    const month = parseInt(fullMatch[2], 10);
+    const day = parseInt(fullMatch[3], 10);
+    const dateObj = new Date(year, month - 1, day);
+    
+    if (!isNaN(dateObj.getTime())) {
+      const weekdaysEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const weekdaysZh = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+      const monthsEn = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+      
+      const weekdayEn = weekdaysEn[dateObj.getDay()];
+      const weekdayZh = weekdaysZh[dateObj.getDay()];
+      const monthEn = monthsEn[month - 1];
+
+      if (lang === 'zh') {
+        return `${year}年${month}月${day}日 ${weekdayZh}`;
+      }
+      return `${weekdayEn}, ${day} ${monthEn} ${year}`;
+    }
+  }
+
+  // Match YYYY-MM
+  const monthMatch = str.match(/^(\d{4})-(\d{1,2})$/);
+  if (monthMatch) {
+    const year = parseInt(monthMatch[1], 10);
+    const month = parseInt(monthMatch[2], 10);
+    const monthsEn = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    if (month >= 1 && month <= 12) {
+      if (lang === 'zh') {
+        return `${year}年${month}月`;
+      }
+      return `${monthsEn[month - 1]} ${year}`;
+    }
+  }
+
+  // Match 4-digit year only
+  const yearMatch = str.match(/^\b(\d{4})\b$/);
+  if (yearMatch) {
+    return lang === 'zh' ? `${yearMatch[1]}年` : yearMatch[1];
+  }
+
+  return str;
+}
+
+/**
  * Calculate age or lifespan string (handles year-only or full dates)
  */
 export function getLifespan(person, lang = 'en') {

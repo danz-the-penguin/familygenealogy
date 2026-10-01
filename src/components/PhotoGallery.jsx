@@ -16,7 +16,8 @@ export default function PhotoGallery({
   onSetAvatarFromPhoto,
   onSelectPerson,
   isAdminMode = true,
-  lang = 'en'
+  lang = 'en',
+  theme = 'win98'
 }) {
   const t = translations[lang] || translations.en;
 
@@ -187,29 +188,56 @@ export default function PhotoGallery({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-950 overflow-hidden">
+    <div className={`flex-1 flex flex-col h-full overflow-hidden ${
+      theme === 'win98' ? 'bg-[#c0c0c0] text-black select-none' : 'bg-slate-950 text-white'
+    }`}>
+      {theme === 'win98' && (
+        <div className="win98-title-navy px-3 py-1 flex items-center justify-between text-xs font-bold text-white shrink-0">
+          <div className="flex items-center space-x-1.5">
+            <span>🖼️</span>
+            <span className="font-extrabold">{t.photoGallery} [Album 1998]</span>
+          </div>
+          <span className="text-[11px] font-mono opacity-90">{photos.length} {lang === 'zh' ? '张影像' : 'photos'}</span>
+        </div>
+      )}
       
       {/* Top Header & Search/Filter Controls */}
-      <div className="p-6 border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md">
+      <div className={`p-4 md:p-6 ${
+        theme === 'win98' 
+          ? 'bg-[#c0c0c0] border-b border-gray-400 text-black' 
+          : 'border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md'
+      }`}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center space-x-2.5">
-              <div className="p-2 rounded-xl bg-purple-600/20 text-purple-400 border border-purple-500/30">
+              <div className={`p-2 ${
+                theme === 'win98' 
+                  ? 'win98-sunken bg-white text-black' 
+                  : 'rounded-xl bg-purple-600/20 text-purple-400 border border-purple-500/30'
+              }`}>
                 <Images className="w-5 h-5" />
               </div>
-              <h1 className="text-xl font-bold text-white flex items-center">
+              <h1 className={`text-xl font-bold flex items-center ${theme === 'win98' ? 'text-black' : 'text-white'}`}>
                 <span>{t.photoGallery}</span>
-                <span className="ml-2 text-xs font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                <span className={`ml-2 text-xs font-mono px-2 py-0.5 rounded-full ${
+                  theme === 'win98' 
+                    ? 'border border-gray-400 bg-white text-black font-bold' 
+                    : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                }`}>
                   {photos.length} {lang === 'zh' ? '张影像' : 'photos'}
                 </span>
                 {!isAdminMode && (
-                  <span className="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                  <span className={`ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                    theme === 'win98' 
+                      ? 'border border-gray-400 bg-emerald-100 text-emerald-950 font-bold' 
+                      : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
+                  }`}>
                     {t.viewerBadge}
                   </span>
                 )}
               </h1>
             </div>
-            <p className="text-xs text-slate-400 mt-1 max-w-2xl">
+            <p className={`text-xs mt-1 max-w-2xl ${theme === 'win98' ? 'text-neutral-800 font-bold' : 'text-slate-400'}`}>
               {t.photoGalleryDesc}
             </p>
           </div>
@@ -218,14 +246,20 @@ export default function PhotoGallery({
           {isAdminMode ? (
             <button
               onClick={() => handleOpenUpload()}
-              className="flex items-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-purple-600/20 transition self-start md:self-auto shrink-0"
+              className={theme === 'win98'
+                ? 'win98-btn flex items-center space-x-1.5 px-4 py-1.5 text-xs font-black text-black shrink-0'
+                : 'flex items-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-purple-600/20 transition self-start md:self-auto shrink-0'
+              }
             >
               <Upload className="w-4 h-4" />
               <span>{t.uploadPhoto}</span>
             </button>
           ) : (
-            <div className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400 flex items-center space-x-1.5">
-              <Eye className="w-3.5 h-3.5 text-indigo-400" />
+            <div className={theme === 'win98'
+              ? 'win98-sunken px-3 py-1 bg-white text-black font-bold text-xs flex items-center space-x-1.5'
+              : 'px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400 flex items-center space-x-1.5'
+            }>
+              <Eye className="w-3.5 h-3.5 text-indigo-700" />
               <span>{lang === 'zh' ? '查阅浏览模式' : 'Read-Only Viewer'}</span>
             </div>
           )}
@@ -345,10 +379,15 @@ export default function PhotoGallery({
                   <div
                     key={photo.id}
                     onClick={() => setActivePhoto(photo)}
-                    className="group relative bg-slate-900/80 rounded-2xl border border-slate-800/80 hover:border-purple-500/50 hover:shadow-2xl hover:shadow-purple-500/10 overflow-hidden cursor-pointer transition flex flex-col"
+                    className={theme === 'win98'
+                      ? 'win98-box p-2.5 bg-[#c0c0c0] hover:bg-[#d4d0c8] cursor-pointer flex flex-col'
+                      : 'group relative bg-slate-900/80 rounded-2xl border border-slate-800/80 hover:border-purple-500/50 hover:shadow-2xl hover:shadow-purple-500/10 overflow-hidden cursor-pointer transition flex flex-col'
+                    }
                   >
                     {/* Thumbnail Image Container */}
-                    <div className="aspect-[4/3] w-full bg-slate-950 overflow-hidden relative">
+                    <div className={`aspect-[4/3] w-full overflow-hidden relative ${
+                      theme === 'win98' ? 'win98-sunken p-0.5 bg-white' : 'bg-slate-950'
+                    }`}>
                       <img
                         src={photo.url}
                         alt={photo.title || 'Photo'}
@@ -366,37 +405,47 @@ export default function PhotoGallery({
 
                       {/* Tagged count pill */}
                       {taggedPersons.length > 0 && (
-                        <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-slate-950/80 backdrop-blur-md border border-slate-700/60 text-[10px] text-slate-200 flex items-center space-x-1 shadow-md">
-                          <User className="w-3 h-3 text-purple-400" />
+                        <div className={`absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[10px] flex items-center space-x-1 shadow-md ${
+                          theme === 'win98'
+                            ? 'bg-yellow-100 text-black border border-yellow-500 font-bold'
+                            : 'bg-slate-950/80 backdrop-blur-md border border-slate-700/60 text-slate-200'
+                        }`}>
+                          <User className="w-3 h-3 text-purple-600" />
                           <span>{taggedPersons.length}</span>
                         </div>
                       )}
                     </div>
 
                     {/* Card Content Footer */}
-                    <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                    <div className={`p-3 flex-1 flex flex-col justify-between space-y-2 ${theme === 'win98' ? 'text-black' : ''}`}>
                       <div>
-                        <h3 className="text-sm font-bold text-white group-hover:text-purple-300 transition line-clamp-1">
+                        <h3 className={`text-sm font-black break-words whitespace-normal leading-snug ${
+                          theme === 'win98' ? 'text-black' : 'text-white group-hover:text-purple-300'
+                        }`}>
                           {photo.title}
                         </h3>
 
-                        <div className="flex flex-wrap items-center gap-2 mt-1.5 text-[11px] text-slate-400">
+                        <div className={`flex flex-wrap items-center gap-2 mt-1 text-[11px] ${
+                          theme === 'win98' ? 'text-neutral-900 font-bold' : 'text-slate-400'
+                        }`}>
                           {photo.date && (
                             <span className="flex items-center">
-                              <Calendar className="w-3 h-3 mr-1 text-slate-500" />
+                              <Calendar className="w-3 h-3 mr-1 text-neutral-600" />
                               {photo.date}
                             </span>
                           )}
                           {photo.place && (
                             <span className="flex items-center truncate max-w-[120px]">
-                              <MapPin className="w-3 h-3 mr-1 text-slate-500 shrink-0" />
+                              <MapPin className="w-3 h-3 mr-1 text-neutral-600 shrink-0" />
                               <span className="truncate">{photo.place}</span>
                             </span>
                           )}
                         </div>
 
                         {photo.caption && (
-                          <p className="text-xs text-slate-300 mt-2 line-clamp-2 leading-relaxed italic">
+                          <p className={`text-xs mt-1.5 line-clamp-2 leading-relaxed italic ${
+                            theme === 'win98' ? 'text-neutral-800 font-medium' : 'text-slate-300'
+                          }`}>
                             "{photo.caption}"
                           </p>
                         )}

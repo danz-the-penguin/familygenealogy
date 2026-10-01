@@ -223,3 +223,93 @@ body.theme-win98 {
   border-right: 2px solid #ffffff;
   border-bottom: 2px solid #ffffff;
 }
+
+/* =========================================================
+   SENIOR HIGH-CONTRAST READABILITY OVERRIDES FOR WIN98
+   Eliminates all washed-out light grey text on #c0c0c0
+   ========================================================= */
+.theme-win98 {
+  color: #000000;
+}
+
+.theme-win98 .text-slate-400,
+.theme-win98 .text-slate-500,
+.theme-win98 .text-gray-400,
+.theme-win98 .text-gray-500,
+.theme-win98 .text-neutral-400,
+.theme-win98 .text-neutral-500,
+.theme-win98 .text-zinc-400,
+.theme-win98 .text-zinc-500 {
+  color: #111111 !important;
+  font-weight: 700 !important;
+}
+
+.theme-win98 .text-slate-300,
+.theme-win98 .text-gray-300,
+.theme-win98 .text-neutral-300,
+.theme-win98 .text-zinc-300 {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+.theme-win98 .text-slate-200,
+.theme-win98 .text-gray-200,
+.theme-win98 .text-neutral-200,
+.theme-win98 .text-white {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+/* Retain white text specifically on Win98 colored titlebars and active buttons */
+.theme-win98 .win98-title-navy,
+.theme-win98 .win98-title-navy *,
+.theme-win98 .win98-title-rose,
+.theme-win98 .win98-title-rose *,
+.theme-win98 .win98-title-gold,
+.theme-win98 .win98-title-gold *,
+.theme-win98 .win98-title-gray,
+.theme-win98 .win98-title-gray *,
+.theme-win98 .win98-btn-active,
+.theme-win98 .win98-btn-active * {
+  color: #ffffff !important;
+}
+
+/* Ensure indigo and blue accent text map to deep navy for clear reading on grey */
+.theme-win98 .text-indigo-400,
+.theme-win98 .text-indigo-300,
+.theme-win98 .text-blue-400,
+.theme-win98 .text-blue-300 {
+  color: #000080 !important;
+  font-weight: 800 !important;
+}
+
+/* Ensure emerald and green accent text map to deep forest green */
+.theme-win98 .text-emerald-400,
+.theme-win98 .text-emerald-300,
+.theme-win98 .text-green-400 {
+  color: #004d20 !important;
+  font-weight: 800 !important;
+}
+
+/* Ensure amber and yellow accent text map to deep amber brown */
+.theme-win98 .text-amber-400,
+.theme-win98 .text-amber-300,
+.theme-win98 .text-yellow-400 {
+  color: #663300 !important;
+  font-weight: 800 !important;
+}
+
+/* Ensure rose and red accent text map to deep crimson */
+.theme-win98 .text-rose-400,
+.theme-win98 .text-rose-300,
+.theme-win98 .text-red-400 {
+  color: #800020 !important;
+  font-weight: 800 !important;
+}
+
+/* Ensure purple accent text maps to deep royal purple */
+.theme-win98 .text-purple-400,
+.theme-win98 .text-purple-300 {
+  color: #4a0072 !important;
+  font-weight: 800 !important;
+}

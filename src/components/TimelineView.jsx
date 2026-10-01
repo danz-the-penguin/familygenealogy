@@ -1,13 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { Calendar, User, Heart, Sparkles, MapPin, Filter } from 'lucide-react';
-import { formatFullName, extractYear } from '../utils/genealogy';
+import { formatFullName, extractYear, formatVerboseDate } from '../utils/genealogy';
 import { translations } from '../utils/i18n';
 
 export default function TimelineView({ 
   persons = [], 
   relationships = [], 
   onSelectPerson,
-  lang = 'en' 
+  lang = 'en',
+  theme = 'win98'
 }) {
   const t = translations[lang] || translations.en;
   const [filterType, setFilterType] = useState('all');
@@ -132,17 +133,23 @@ export default function TimelineView({
   }, [allEvents, filterType]);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-950 overflow-hidden">
+    <div className={`flex-1 flex flex-col h-full overflow-hidden ${
+      theme === 'win98' ? 'bg-[#008080] text-black select-none' : 'bg-slate-950 text-white'
+    }`}>
       {/* Header & Filter Toolbar */}
-      <div className="p-6 border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md">
+      <div className={`p-4 sm:p-5 ${
+        theme === 'win98' ? 'bg-[#c0c0c0] border-b-2 border-gray-400 shadow-md' : 'border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md'
+      }`}>
         <div className="max-w-4xl mx-auto space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight flex items-center">
-                <Calendar className="w-6 h-6 mr-2 text-indigo-400" />
+              <h1 className={`text-xl sm:text-2xl font-black tracking-tight flex items-center ${
+                theme === 'win98' ? 'text-black' : 'text-white'
+              }`}>
+                <Calendar className={`w-6 h-6 mr-2 ${theme === 'win98' ? 'text-blue-900' : 'text-indigo-400'}`} />
                 {lang === 'zh' ? '家族历史大事编年史' : 'Family Historical Timeline'} ({filteredEvents.length} {lang === 'zh' ? '件大事' : 'Events'})
               </h1>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className={`text-xs mt-0.5 font-bold ${theme === 'win98' ? 'text-neutral-800' : 'text-slate-400'}`}>
                 {lang === 'zh' ? '按时间顺序记录家族出生、喜结连理婚配与世代交替里程碑' : 'Chronological milestones of births, marriages, and generational passing across decades.'}
               </p>
             </div>
@@ -152,11 +159,14 @@ export default function TimelineView({
               <button
                 type="button"
                 onClick={() => setFilterType('all')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
-                  filterType === 'all'
-                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/20'
-                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200'
-                }`}
+                className={theme === 'win98'
+                  ? `win98-btn px-3 py-1 text-xs font-bold text-black ${filterType === 'all' ? 'win98-btn-active bg-[#d4d0c8]' : ''}`
+                  : `px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
+                      filterType === 'all'
+                        ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/20'
+                        : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200'
+                    }`
+                }
               >
                 {lang === 'zh' ? '全部大事' : 'All'} ({counts.all})
               </button>
@@ -164,39 +174,48 @@ export default function TimelineView({
               <button
                 type="button"
                 onClick={() => setFilterType('marriage')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition flex items-center space-x-1.5 ${
-                  filterType === 'marriage'
-                    ? 'bg-pink-600 text-white border-pink-500 shadow-md shadow-pink-600/20'
-                    : 'bg-slate-800 text-pink-300 border-slate-700 hover:bg-slate-700/60'
-                }`}
+                className={theme === 'win98'
+                  ? `win98-btn px-3 py-1 text-xs font-bold flex items-center space-x-1.5 text-black ${filterType === 'marriage' ? 'win98-btn-active bg-pink-100 text-pink-950 font-black' : ''}`
+                  : `px-3 py-1.5 rounded-xl text-xs font-semibold border transition flex items-center space-x-1.5 ${
+                      filterType === 'marriage'
+                        ? 'bg-pink-600 text-white border-pink-500 shadow-md shadow-pink-600/20'
+                        : 'bg-slate-800 text-pink-300 border-slate-700 hover:bg-slate-700/60'
+                    }`
+                }
               >
-                <Heart className="w-3.5 h-3.5" />
+                <Heart className={`w-3.5 h-3.5 ${theme === 'win98' ? 'text-rose-700' : ''}`} />
                 <span>{lang === 'zh' ? '婚配连理' : 'Marriages'} ({counts.marriages})</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setFilterType('birth')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition flex items-center space-x-1.5 ${
-                  filterType === 'birth'
-                    ? 'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-600/20'
-                    : 'bg-slate-800 text-emerald-300 border-slate-700 hover:bg-slate-700/60'
-                }`}
+                className={theme === 'win98'
+                  ? `win98-btn px-3 py-1 text-xs font-bold flex items-center space-x-1.5 text-black ${filterType === 'birth' ? 'win98-btn-active bg-emerald-100 text-emerald-950 font-black' : ''}`
+                  : `px-3 py-1.5 rounded-xl text-xs font-semibold border transition flex items-center space-x-1.5 ${
+                      filterType === 'birth'
+                        ? 'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-600/20'
+                        : 'bg-slate-800 text-emerald-300 border-slate-700 hover:bg-slate-700/60'
+                    }`
+                }
               >
-                <Sparkles className="w-3.5 h-3.5" />
+                <Sparkles className={`w-3.5 h-3.5 ${theme === 'win98' ? 'text-emerald-700' : ''}`} />
                 <span>{lang === 'zh' ? '出生诞生' : 'Births'} ({counts.births})</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setFilterType('death')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition flex items-center space-x-1.5 ${
-                  filterType === 'death'
-                    ? 'bg-rose-600 text-white border-rose-500 shadow-md shadow-rose-600/20'
-                    : 'bg-slate-800 text-rose-300 border-slate-700 hover:bg-slate-700/60'
-                }`}
+                className={theme === 'win98'
+                  ? `win98-btn px-3 py-1 text-xs font-bold flex items-center space-x-1.5 text-black ${filterType === 'death' ? 'win98-btn-active bg-neutral-300 text-black font-black' : ''}`
+                  : `px-3 py-1.5 rounded-xl text-xs font-semibold border transition flex items-center space-x-1.5 ${
+                      filterType === 'death'
+                        ? 'bg-rose-600 text-white border-rose-500 shadow-md shadow-rose-600/20'
+                        : 'bg-slate-800 text-rose-300 border-slate-700 hover:bg-slate-700/60'
+                    }`
+                }
               >
-                <span>†</span>
+                <span className="font-black">†</span>
                 <span>{lang === 'zh' ? '归息离世' : 'Passings'} ({counts.deaths})</span>
               </button>
             </div>
@@ -205,15 +224,19 @@ export default function TimelineView({
       </div>
 
       {/* Timeline Stream */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-4xl mx-auto relative pl-6 before:absolute before:left-3 before:top-4 before:bottom-4 before:w-0.5 before:bg-slate-800">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <div className={`max-w-4xl mx-auto relative pl-6 before:absolute before:left-3 before:top-4 before:bottom-4 before:w-0.5 ${
+          theme === 'win98' ? 'before:bg-black/50' : 'before:bg-slate-800'
+        }`}>
           {filteredEvents.length === 0 ? (
-            <div className="text-center py-20 bg-slate-900/30 rounded-2xl border border-slate-800/60 p-8">
-              <Calendar className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-slate-300">
+            <div className={`text-center py-20 p-8 ${
+              theme === 'win98' ? 'win98-box bg-[#c0c0c0] text-black' : 'bg-slate-900/30 rounded-2xl border border-slate-800/60'
+            }`}>
+              <Calendar className={`w-12 h-12 mx-auto mb-3 ${theme === 'win98' ? 'text-gray-700' : 'text-slate-600'}`} />
+              <h3 className={`text-lg font-bold ${theme === 'win98' ? 'text-black' : 'text-slate-300'}`}>
                 {lang === 'zh' ? '未找到符合条件的时间线事件' : 'No Events Found for this Category'}
               </h3>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className={`text-xs mt-1 font-semibold ${theme === 'win98' ? 'text-gray-800' : 'text-slate-500'}`}>
                 {lang === 'zh' ? '可以在族人编辑中为配偶添加结婚年份或日期。' : 'You can add marriage years or dates in the member editor.'}
               </p>
             </div>
@@ -229,6 +252,114 @@ export default function TimelineView({
                 ? 'bg-pink-500 shadow-pink-500/30' 
                 : 'bg-rose-500 shadow-rose-500/30';
 
+              if (theme === 'win98') {
+                const titleClass = isMarriage 
+                  ? 'win98-title-rose' 
+                  : isBirth 
+                  ? 'win98-title-navy' 
+                  : 'win98-title-gray';
+
+                return (
+                  <div key={event.id} className="relative mb-5 pl-7 group">
+                    {/* Retro bullet */}
+                    <div className={`absolute left-0 top-3 w-5 h-5 rounded-none border border-black ${dotBg} -translate-x-[20px] flex items-center justify-center text-white font-bold text-xs shadow`}>
+                      {isBirth && <Sparkles className="w-3 h-3 text-white" />}
+                      {isMarriage && <Heart className="w-3 h-3 text-white fill-white" />}
+                      {isDeath && <span className="text-[10px] font-bold text-white leading-none">†</span>}
+                    </div>
+
+                    <div 
+                      onClick={() => onSelectPerson(event.person)}
+                      className="win98-box p-1 transition-transform hover:scale-[1.01] cursor-pointer select-none"
+                    >
+                      <div className={`px-2.5 py-0.5 flex items-center justify-between text-xs font-bold text-white select-none ${titleClass}`}>
+                        <span>
+                          {isMarriage 
+                            ? (lang === 'zh' ? '喜结连理 • 婚配记事' : 'Marriage Milestone') 
+                            : (isBirth ? (lang === 'zh' ? '诞辰志庆 • 出生入籍' : 'Birth Milestone') : (lang === 'zh' ? '仙逝归息 • 离世缅怀' : 'Passing Milestone'))}
+                        </span>
+                        <span className="text-[10px] font-mono opacity-90 uppercase">
+                          {event.year}
+                        </span>
+                      </div>
+
+                      <div className="m-1 win98-sunken p-3 bg-white text-black flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center space-x-3.5">
+                          {isMarriage && event.partner ? (
+                            <div className="flex items-center -space-x-3 shrink-0">
+                              {event.person.avatar ? (
+                                <img 
+                                  src={event.person.avatar} 
+                                  alt={formatFullName(event.person, lang)} 
+                                  className="w-12 h-12 rounded object-cover border border-gray-400 relative z-10" 
+                                />
+                              ) : (
+                                <div className="w-12 h-12 bg-[#dfdfdf] border border-gray-400 rounded flex items-center justify-center text-gray-800 font-bold text-base relative z-10">
+                                  {event.person.gender === 'female' ? '♀' : '♂'}
+                                </div>
+                              )}
+                              {event.partner.avatar ? (
+                                <img 
+                                  src={event.partner.avatar} 
+                                  alt={formatFullName(event.partner, lang)} 
+                                  className="w-12 h-12 rounded object-cover border border-rose-500 shadow relative z-20" 
+                                />
+                              ) : (
+                                <div className="w-12 h-12 bg-pink-100 border border-rose-500 rounded flex items-center justify-center text-rose-800 font-bold text-base relative z-20">
+                                  {event.partner.gender === 'female' ? '♀' : '♂'}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            event.person.avatar ? (
+                              <img 
+                                src={event.person.avatar} 
+                                alt={formatFullName(event.person, lang)} 
+                                className="w-12 h-12 rounded object-cover border border-gray-400 shrink-0" 
+                              />
+                            ) : (
+                              <div className="w-12 h-12 bg-[#dfdfdf] border border-gray-400 rounded flex items-center justify-center text-gray-800 font-bold text-base shrink-0">
+                                {event.person.gender === 'female' ? '♀' : '♂'}
+                              </div>
+                            )
+                          )}
+
+                          <div>
+                            <h3 className="font-black text-black text-sm sm:text-base leading-snug break-words whitespace-normal">
+                              {event.title}
+                            </h3>
+
+                            <div className="text-xs text-black font-semibold mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                              <span className="font-black text-[#000080] text-xs sm:text-sm">
+                                📅 {formatVerboseDate(event.date, lang)}
+                              </span>
+                              {event.place && (
+                                <span className="flex items-center text-neutral-800 font-bold">
+                                  <MapPin className="w-3.5 h-3.5 mr-1 text-neutral-600" />
+                                  <span>{event.place}</span>
+                                </span>
+                              )}
+                              {event.notes && (
+                                <span className="text-neutral-700 italic font-medium">
+                                  "{event.notes}"
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="shrink-0 self-start sm:self-auto">
+                          <span className="win98-btn px-3 py-1 font-mono font-black text-xs sm:text-sm text-black inline-block">
+                            {event.year}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
+              // Modern theme branch
               return (
                 <div key={event.id} className="relative mb-6 pl-8 group">
                   {/* Timeline node circle */}
@@ -278,7 +409,7 @@ export default function TimelineView({
                           <img 
                             src={event.person.avatar} 
                             alt={formatFullName(event.person, lang)} 
-                            className="w-10 h-10 rounded-full object-cover border border-slate-700 shrink-0" 
+                            className="w-10 h-10 rounded-full object-cover border-2 border-slate-700 shrink-0" 
                           />
                         ) : (
                           <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 shrink-0">
@@ -289,7 +420,7 @@ export default function TimelineView({
 
                       <div>
                         <div className="flex items-center space-x-2 flex-wrap">
-                          <span className={`text-sm font-bold text-white transition ${isMarriage ? 'group-hover:text-pink-300' : 'group-hover:text-indigo-300'}`}>
+                          <span className={`text-sm font-bold text-white transition break-words whitespace-normal ${isMarriage ? 'group-hover:text-pink-300' : 'group-hover:text-indigo-300'}`}>
                             {event.title}
                           </span>
                           {isMarriage && (
@@ -299,8 +430,10 @@ export default function TimelineView({
                           )}
                         </div>
 
-                        <div className="text-xs text-slate-400 mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                          <span className="font-medium text-slate-300">{event.date}</span>
+                        <div className="text-xs text-slate-300 mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                          <span className="font-semibold text-indigo-300">
+                            {formatVerboseDate(event.date, lang)}
+                          </span>
                           {event.place && (
                             <span className="flex items-center text-slate-400">
                               <MapPin className="w-3 h-3 mr-1 text-slate-500" />

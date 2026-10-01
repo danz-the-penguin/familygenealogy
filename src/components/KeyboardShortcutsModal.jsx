@@ -5,7 +5,8 @@ import { translations } from '../utils/i18n';
 export default function KeyboardShortcutsModal({
   isOpen,
   onClose,
-  lang = 'en'
+  lang = 'en',
+  theme = 'win98'
 }) {
   const t = translations[lang] || translations.en;
 
@@ -112,6 +113,79 @@ export default function KeyboardShortcutsModal({
       ]
     }
   ];
+
+  if (theme === 'win98') {
+    return (
+      <div 
+        className="fixed inset-0 z-[120] overflow-y-auto bg-black/50 backdrop-blur-none flex items-center justify-center p-4 animate-in fade-in duration-100"
+        onClick={onClose}
+      >
+        <div 
+          className="relative w-full max-w-2xl win98-box shadow-2xl overflow-hidden select-none"
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Win98 Titlebar */}
+          <div className="win98-title-navy px-3 py-1 flex items-center justify-between text-xs font-bold text-white">
+            <div className="flex items-center space-x-1.5">
+              <span>⌨️</span>
+              <span className="font-extrabold">{t.shortcutsTitle} [Keyboard Help 1998]</span>
+            </div>
+            <button 
+              onClick={onClose}
+              className="win98-btn px-2 py-0.2 text-xs font-bold text-black hover:bg-red-100"
+              title="Close (Esc)"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Win98 Body */}
+          <div className="p-4 space-y-4 bg-[#c0c0c0] max-h-[75vh] overflow-y-auto">
+            {shortcutGroups.map((group, gIdx) => (
+              <div key={gIdx} className="space-y-1.5">
+                <div className="text-xs font-black text-black uppercase tracking-wider flex items-center">
+                  <span className="text-sm mr-1">📌</span>
+                  <span>{group.groupTitle}</span>
+                </div>
+                <div className="win98-sunken bg-white p-2 divide-y divide-gray-200">
+                  {group.items.map((item, idx) => (
+                    <div key={idx} className="p-2 flex items-center justify-between hover:bg-blue-50 text-black">
+                      <span className="text-xs font-extrabold text-black">
+                        {item.description}
+                      </span>
+                      <div className="flex items-center space-x-1 shrink-0 ml-3">
+                        {item.keys.map((k, kIdx) => (
+                          <kbd
+                            key={kIdx}
+                            className={`win98-btn px-2 py-0.5 text-xs font-mono font-black ${
+                              item.highlight ? 'bg-rose-100 text-rose-900 border-rose-400' : 'text-black'
+                            }`}
+                          >
+                            {k}
+                          </kbd>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Win98 Footer */}
+          <div className="p-3 border-t border-gray-400 bg-[#c0c0c0] flex items-center justify-between text-xs font-bold text-neutral-800">
+            <span>{lang === 'zh' ? '• 输入框打字时自动暂停快捷键' : '• Shortcuts are paused while typing in text fields'}</span>
+            <button
+              onClick={onClose}
+              className="win98-btn px-5 py-1 text-xs font-black text-black"
+            >
+              {lang === 'zh' ? '确定 / 关闭' : 'OK / Close'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 

@@ -325,7 +325,6 @@ export default function FamilyTreeVisualizer({
                   onSetRoot={() => onSetRootPerson(sib.id)}
                   onEdit={() => onEditPerson && onEditPerson(sib)}
                   isRoot={false}
-                  compact
                   magnify={magnifyOnHover}
                   lang={lang}
                   theme={theme}
@@ -504,69 +503,68 @@ function PersonNodeCard({
     return (
       <div
         onClick={onSelect}
-        className={`group relative win98-box cursor-pointer select-none transition-transform duration-200 origin-center ${
+        className={`group relative win98-box cursor-pointer select-none transition-transform duration-200 origin-center w-[360px] min-w-[360px] max-w-[360px] flex flex-col justify-between ${
           magnify 
             ? 'hover:scale-[1.85] hover:z-50 hover:shadow-2xl' 
             : 'hover:scale-[1.03]'
         } ${
           isRoot 
-            ? 'ring-2 ring-blue-800 shadow-2xl z-10 w-72' 
-            : `${compact ? 'w-56' : 'w-64'}`
+            ? 'ring-2 ring-blue-800 shadow-2xl z-10' 
+            : ''
         }`}
       >
-        {/* Win98 Window Title Bar */}
-        <div className={`px-2 py-0.5 flex items-center justify-between text-xs font-bold text-white select-none ${titleClass}`}>
-          <div className="flex items-center space-x-1.5 truncate">
-            <span className="text-[11px]">{isRoot ? '👑' : (isFemale ? '♀' : '♂')}</span>
-            <span className="truncate">{role}</span>
+        {/* Win98 Card Title Bar */}
+        <div className={`px-3 py-1 flex items-center justify-between text-xs font-bold text-white select-none ${titleClass}`}>
+          <div className="flex items-center space-x-1.5">
+            <span className="text-[13px]">{isRoot ? '👑' : (isFemale ? '♀' : '♂')}</span>
+            <span className="tracking-wide font-extrabold">{role}</span>
           </div>
-          <div className="flex items-center space-x-0.5 shrink-0" onClick={e => e.stopPropagation()}>
-            <span className="win98-icon-btn">_</span>
-            <span className="win98-icon-btn">✕</span>
-          </div>
+          <span className="text-[11px] font-mono opacity-90 uppercase font-bold">
+            {isFemale ? (lang === 'zh' ? '女性' : 'Female') : (lang === 'zh' ? '男性' : 'Male')}
+          </span>
         </div>
 
         {/* Win98 Sunken White Panel for Maximum Legibility */}
-        <div className="m-1 win98-sunken p-2.5 bg-white text-black flex items-start space-x-3">
+        <div className="m-1 win98-sunken p-3 bg-white text-black flex items-start space-x-3.5 flex-1">
           {person.avatar ? (
             <img
               src={person.avatar}
               alt={formatFullName(person, lang)}
-              className="w-12 h-12 rounded object-cover border border-gray-400 shrink-0"
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded object-cover border border-gray-400 shrink-0"
             />
           ) : (
-            <div className="w-12 h-12 bg-[#dfdfdf] border border-gray-400 rounded flex items-center justify-center text-gray-700 shrink-0 font-bold text-lg">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#dfdfdf] border border-gray-400 rounded flex items-center justify-center text-gray-800 shrink-0 font-black text-2xl">
               {person.gender === 'female' ? '♀' : '♂'}
             </div>
           )}
 
           <div className="flex-1 min-w-0">
-            <h3 className="font-black text-black text-sm md:text-base leading-snug truncate">
+            <h3 className="font-black text-black text-base sm:text-lg leading-snug break-words whitespace-normal">
               {formatFullName(person, lang)}
             </h3>
 
-            {person.chineseName && (
-              <div className="text-xs font-bold text-[#000080] truncate mt-0.5">
+            {person.chineseName && !formatFullName(person, lang).includes(person.chineseName) && (
+              <div className="text-sm sm:text-base font-extrabold text-[#000080] break-words whitespace-normal mt-0.5">
                 {person.chineseName}
               </div>
             )}
 
-            <p className="text-xs font-bold text-neutral-800 mt-1">
+            <p className="text-xs sm:text-sm font-extrabold text-neutral-900 mt-1 whitespace-normal">
               {getLifespan(person, lang)}
             </p>
 
-            <div className="mt-1 flex items-center space-x-1">
+            <div className="mt-1 flex items-center space-x-1.5 flex-wrap gap-y-1">
               {person.isLiving ? (
-                <span className="text-[10px] font-extrabold px-1.5 py-0.2 bg-emerald-100 text-emerald-900 border border-emerald-400 rounded">
+                <span className="text-xs font-black px-2 py-0.5 bg-emerald-100 text-emerald-950 border border-emerald-500 rounded">
                   {lang === 'zh' ? '在世' : 'Living'}
                 </span>
               ) : (
-                <span className="text-[10px] font-extrabold px-1.5 py-0.2 bg-neutral-200 text-neutral-800 border border-neutral-400 rounded">
+                <span className="text-xs font-black px-2 py-0.5 bg-neutral-200 text-neutral-900 border border-neutral-400 rounded">
                   {lang === 'zh' ? '已故' : 'Deceased'}
                 </span>
               )}
               {person.occupation && (
-                <span className="text-[10px] text-neutral-600 truncate">
+                <span className="text-xs font-bold text-neutral-800 break-words whitespace-normal">
                   • {person.occupation}
                 </span>
               )}
@@ -666,22 +664,20 @@ function PersonNodeCard({
           : 'hover:scale-[1.03]'
       } ${
         isRoot 
-          ? 'border-indigo-500 shadow-2xl shadow-indigo-500/20 scale-105 z-10 highlight-node p-5 w-72' 
-          : `${genderBorder} hover:shadow-xl hover:shadow-indigo-500/5 ${compact ? 'p-3 w-52' : 'p-4 w-64'}`
+          ? 'border-indigo-500 shadow-2xl shadow-indigo-500/20 z-10 highlight-node p-4 w-[360px] min-w-[360px] max-w-[360px]' 
+          : `${genderBorder} hover:shadow-xl hover:shadow-indigo-500/5 p-4 w-[360px] min-w-[360px] max-w-[360px]`
       }`}
     >
-      <div className="flex items-start space-x-3">
+      <div className="flex items-start space-x-3.5">
         {person.avatar ? (
           <img
             src={person.avatar}
             alt={formatFullName(person, lang)}
-            className={`rounded-full object-cover border-2 shrink-0 ${
-              isRoot ? 'w-14 h-14 border-indigo-400' : `${compact ? 'w-10 h-10' : 'w-12 h-12'} border-slate-700`
-            }`}
+            className="rounded-full object-cover border-2 shrink-0 w-14 h-14 sm:w-16 sm:h-16 border-slate-700"
           />
         ) : (
           <div className={`rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center text-slate-400 shrink-0 ${
-            isRoot ? 'w-14 h-14' : `${compact ? 'w-10 h-10' : 'w-12 h-12'}`
+            isRoot ? 'w-14 h-14 sm:w-16 sm:h-16' : `${compact ? 'w-10 h-10' : 'w-13 h-13'}`
           }`}>
             <User className="w-6 h-6" />
           </div>
@@ -694,11 +690,11 @@ function PersonNodeCard({
             </span>
           </div>
 
-          <h3 className={`font-bold text-white truncate mt-1 group-hover:text-indigo-300 transition ${isRoot ? 'text-base' : 'text-sm'}`}>
+          <h3 className={`font-bold text-white break-words whitespace-normal leading-snug mt-1 group-hover:text-indigo-300 transition ${isRoot ? 'text-lg' : 'text-base'}`}>
             {formatFullName(person, lang)}
           </h3>
 
-          <p className="text-xs text-slate-400 truncate mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-300 mt-1 whitespace-normal">
             {getLifespan(person, lang)}
           </p>
         </div>

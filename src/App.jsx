@@ -826,6 +826,7 @@ export default function App() {
             initialTab={explorerTab}
             initialTargetBId={explorerTargetBId}
             lang={lang}
+            theme={theme}
           />
         )}
 
@@ -851,6 +852,7 @@ export default function App() {
               setIsPersonModalOpen(true);
             } : undefined}
             lang={lang}
+            theme={theme}
           />
         )}
 
@@ -860,6 +862,7 @@ export default function App() {
             relationships={data.relationships || []}
             onSelectPerson={(p) => setSelectedPersonId(p.id)}
             lang={lang}
+            theme={theme}
           />
         )}
 
@@ -867,6 +870,7 @@ export default function App() {
           <StatsDashboard
             persons={data.persons || []}
             lang={lang}
+            theme={theme}
           />
         )}
 
@@ -881,12 +885,14 @@ export default function App() {
             onSelectPerson={(p) => setSelectedPersonId(p.id)}
             isAdminMode={isAdminMode}
             lang={lang}
+            theme={theme}
           />
         )}
 
         {currentView === 'tutorial' && (
           <TutorialSection
             lang={lang}
+            theme={theme}
             onNavigateView={setCurrentView}
           />
         )}
@@ -1174,6 +1180,7 @@ export default function App() {
         onReloadFromFile={fetchFamilyData}
         syncStatus={isSynced}
         lang={lang}
+        theme={theme}
       />
 
       {/* Delete Confirmation Modal (Triggered by Delete / Backspace or Drawer Delete button) */}
@@ -1186,6 +1193,7 @@ export default function App() {
           setPersonToDelete(null);
         }}
         lang={lang}
+        theme={theme}
       />
 
       {/* Keyboard Shortcuts Cheat Sheet Modal (Triggered by ? or Navbar button) */}
@@ -1193,6 +1201,7 @@ export default function App() {
         isOpen={isShortcutsModalOpen}
         onClose={() => setIsShortcutsModalOpen(false)}
         lang={lang}
+        theme={theme}
       />
 
       {/* Admin Passcode Authentication Modal */}
@@ -1201,15 +1210,23 @@ export default function App() {
         onClose={() => setIsAdminLoginModalOpen(false)}
         onLoginSuccess={handleAdminLoginSuccess}
         lang={lang}
+        theme={theme}
       />
 
       {/* Quick Action Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-[130] animate-in slide-in-from-bottom-5 duration-200 pointer-events-none">
-          <div className="flex items-center space-x-2.5 px-4 py-2.5 bg-slate-900/95 border border-indigo-500/40 text-white rounded-2xl shadow-2xl backdrop-blur-md text-xs font-medium">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>{toastMessage}</span>
-          </div>
+          {theme === 'win98' ? (
+            <div className="win98-box px-3.5 py-2 shadow-2xl flex items-center space-x-2 text-xs font-black text-black">
+              <span className="text-sm">ℹ️</span>
+              <span>{toastMessage}</span>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-2.5 px-4 py-2.5 bg-slate-900/95 border border-indigo-500/40 text-white rounded-2xl shadow-2xl backdrop-blur-md text-xs font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>{toastMessage}</span>
+            </div>
+          )}
         </div>
       )}
 

@@ -15,25 +15,13 @@ import { translations } from "../utils/i18n";
 // ==============================================================================
 // 🔑 ADMIN PASSWORD CONFIGURATION / 管理员密码配置
 // ==============================================================================
-// You have TWO easy ways to set or change your Admin Password:
-//
-// 1. VIA ENVIRONMENT VARIABLE (.env or .env.local) - BEST PRACTICE FOR TEMPLATES:
-//    Create or edit a `.env` file in the project root and add:
-//       VITE_ADMIN_PASSWORD="YourCustomPasswordHere"
-//    (Because `.env` is listed in `.gitignore`, your password will NEVER be
-//     accidentally pushed to GitHub!)
-//
-// 2. HARDCODED IN THIS FILE:
-//    Change or add passcodes in the array below:
-// ==============================================================================
 export const VALID_ADMIN_PASSCODES = [
-  import.meta.env.VITE_ADMIN_PASSWORD, // 1. Read from VITE_ADMIN_PASSWORD in .env
-  "admin",                             // 2. <-- CHANGE THIS default password if you want! (默认密码)
-  "family123",                         // 3. <-- Alternative backup password
-  "genealogy",                         // 4. <-- Alternative backup password
-].filter(Boolean); // Filters out any undefined/empty variables
+  import.meta.env.VITE_ADMIN_PASSWORD,
+  "admin",
+  "family123",
+  "genealogy",
+].filter(Boolean);
 
-// Primary password suggested by the "Fill Default" button helper
 export const DEFAULT_ADMIN_HINT = import.meta.env.VITE_ADMIN_PASSWORD || "admin";
 // ==============================================================================
 
@@ -42,6 +30,7 @@ export default function AdminLoginModal({
   onClose,
   onLoginSuccess,
   lang = "en",
+  theme = "win98"
 }) {
   const t = translations[lang] || translations.en;
   const [password, setPassword] = useState("");
@@ -57,7 +46,6 @@ export default function AdminLoginModal({
 
     const trimmed = password.trim();
 
-    // Check against authorized passwords (case-insensitive)
     const isAuthorized = VALID_ADMIN_PASSCODES.some(
       (validPass) => String(validPass).toLowerCase() === trimmed.toLowerCase()
     );
@@ -85,6 +73,118 @@ export default function AdminLoginModal({
     setPassword(DEFAULT_ADMIN_HINT);
     setError("");
   };
+
+  if (theme === "win98") {
+    return (
+      <div className="fixed inset-0 z-[150] overflow-y-auto bg-black/50 flex items-center justify-center p-4 animate-in fade-in duration-100">
+        <div
+          className="relative w-full max-w-md win98-box shadow-2xl overflow-hidden select-none"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Titlebar */}
+          <div className="win98-title-navy px-3 py-1 flex items-center justify-between text-xs font-bold text-white">
+            <div className="flex items-center space-x-1.5">
+              <span>🔑</span>
+              <span>{lang === "zh" ? "系统管理员身份验证" : "Enter Network Password"}</span>
+            </div>
+            <button
+              onClick={onClose}
+              className="win98-btn px-2 py-0.2 text-xs font-bold text-black hover:bg-red-100"
+              title="Close (Esc)"
+            >
+              ✕
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-4 space-y-3.5 bg-[#c0c0c0] text-black">
+            {error && (
+              <div className="p-2 win98-sunken bg-rose-50 text-rose-900 text-xs font-extrabold flex items-start space-x-2">
+                <span className="text-sm">⚠️</span>
+                <span>{error}</span>
+              </div>
+            )}
+
+            <div className="flex items-start space-x-3 win98-sunken bg-white p-3 text-black">
+              <span className="text-3xl select-none">🗝️</span>
+              <div className="text-xs font-bold text-black space-y-1">
+                <p className="font-black text-sm">
+                  {lang === "zh" ? "请输入管理员通行密码以解锁编辑权限：" : "Type password to gain full administrator access:"}
+                </p>
+                <p className="text-neutral-700">
+                  {lang === "zh" ? "普通模式仅可查阅；管理模式允许录入、编辑与删除族人档案。" : "Read-only mode protects genealogical heritage records from unverified changes."}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-xs font-black text-black">
+                <label className="flex items-center space-x-1">
+                  <span>{lang === "zh" ? "管理密码 (Password):" : "Password:"}</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={handleFillDefault}
+                  className="text-blue-900 underline font-extrabold hover:text-blue-700"
+                >
+                  {lang === "zh" ? `自动填入默认密码 (${DEFAULT_ADMIN_HINT})` : `Fill default (${DEFAULT_ADMIN_HINT})`}
+                </button>
+              </div>
+
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  autoFocus
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError("");
+                  }}
+                  placeholder={lang === "zh" ? `例如: ${DEFAULT_ADMIN_HINT}` : `e.g. ${DEFAULT_ADMIN_HINT}`}
+                  className="w-full px-2.5 py-1 text-sm font-mono win98-sunken bg-white text-black"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2 top-1 text-xs text-neutral-800 font-bold px-1"
+                >
+                  {showPassword ? "👁️‍🗨️" : "👁️"}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
+              <label className="flex items-center space-x-2 cursor-pointer text-xs font-bold text-black">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                <span>
+                  {lang === "zh" ? "在此电脑上记住管理登录状态" : "Save this password in your password list"}
+                </span>
+              </label>
+            </div>
+
+            <div className="pt-2 flex items-center justify-end space-x-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="win98-btn px-4 py-1 text-xs font-bold text-black"
+              >
+                {t.cancel}
+              </button>
+              <button
+                type="submit"
+                className="win98-btn px-5 py-1 text-xs font-black text-black bg-[#d4d0c8]"
+              >
+                {lang === "zh" ? "确定 (OK)" : "OK"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[150] overflow-y-auto bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
@@ -144,7 +244,7 @@ export default function AdminLoginModal({
                 onClick={handleFillDefault}
                 className="text-[11px] text-amber-400 hover:text-amber-300 hover:underline flex items-center space-x-1"
               >
-                <Sparkles className="w-3 h-3" />
+                <Sparkles className="w-3.5 h-3.5" />
                 <span>
                   {lang === "zh"
                     ? `填入密码 (${DEFAULT_ADMIN_HINT})`

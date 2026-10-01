@@ -10,7 +10,9 @@ export default function FileEditorModal({
   currentData, 
   onSaveData, 
   onReloadFromFile,
-  syncStatus 
+  syncStatus,
+  lang = 'en',
+  theme = 'win98'
 }) {
   const [jsonText, setJsonText] = useState('');
   const [parseError, setParseError] = useState(null);
@@ -81,6 +83,116 @@ export default function FileEditorModal({
     };
     reader.readAsText(file);
   };
+
+  if (theme === 'win98') {
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 flex items-center justify-center p-3 select-none">
+        <div className="relative w-full max-w-4xl win98-box shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+          
+          {/* Win98 Titlebar */}
+          <div className="win98-title-navy px-3 py-1 flex items-center justify-between text-xs font-bold text-white select-none">
+            <div className="flex items-center space-x-1.5">
+              <span>📄</span>
+              <span className="font-extrabold">{lang === 'zh' ? '族谱数据源底层编辑 - family.json [记事本 1998]' : 'family.json - Genealogy Editor [Notepad 1998]'}</span>
+            </div>
+            <button
+              onClick={onClose}
+              className="win98-btn px-2 py-0.2 text-xs font-bold text-black hover:bg-red-100"
+              title="Close (Esc)"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Win98 Toolbar */}
+          <div className="p-2 border-b border-gray-400 bg-[#c0c0c0] flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="flex items-center space-x-1 font-bold text-black">
+              <span>{lang === 'zh' ? '本地文件: ' : 'File: '}</span>
+              <code className="win98-sunken px-2 py-0.5 bg-white text-black font-mono">data/family.json</code>
+            </div>
+
+            <div className="flex items-center space-x-1.5">
+              <button
+                onClick={onReloadFromFile}
+                className="win98-btn px-2.5 py-1 text-xs font-bold text-black"
+              >
+                {lang === 'zh' ? '从磁盘重新加载' : 'Reload Disk'}
+              </button>
+              <label className="win98-btn px-2.5 py-1 text-xs font-bold text-black cursor-pointer">
+                <span>{lang === 'zh' ? '导入文件' : 'Import'}</span>
+                <input type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
+              </label>
+              <button
+                onClick={handleDownload}
+                className="win98-btn px-2.5 py-1 text-xs font-bold text-black"
+              >
+                {lang === 'zh' ? '导出备份' : 'Export'}
+              </button>
+              <button
+                onClick={handleFormat}
+                className="win98-btn px-2.5 py-1 text-xs font-bold text-black"
+              >
+                {lang === 'zh' ? '规范缩进' : 'Format'}
+              </button>
+              <button
+                onClick={handleCopy}
+                className="win98-btn px-2.5 py-1 text-xs font-bold text-black"
+              >
+                {copied ? (lang === 'zh' ? '已复制!' : 'Copied!') : (lang === 'zh' ? '复制' : 'Copy')}
+              </button>
+            </div>
+          </div>
+
+          {/* Alert messages */}
+          {parseError && (
+            <div className="win98-sunken m-2 p-2 bg-rose-50 text-rose-900 text-xs font-black">
+              ⚠️ JSON 格式语法错误: {parseError}
+            </div>
+          )}
+          {saveSuccess && (
+            <div className="win98-sunken m-2 p-2 bg-emerald-50 text-emerald-950 text-xs font-black">
+              ✅ 成功保存至 data/family.json！数据已实时热重载。
+            </div>
+          )}
+
+          {/* Editor Body */}
+          <div className="flex-1 p-2 bg-[#c0c0c0] overflow-hidden flex flex-col">
+            <textarea
+              value={jsonText}
+              onChange={(e) => {
+                setJsonText(e.target.value);
+                setParseError(null);
+              }}
+              spellCheck="false"
+              className="w-full flex-1 p-3 win98-sunken bg-white text-black font-mono text-xs leading-relaxed resize-none overflow-y-auto"
+            />
+          </div>
+
+          {/* Footer Controls */}
+          <div className="p-2.5 border-t border-gray-400 bg-[#c0c0c0] flex items-center justify-between text-xs">
+            <span className="font-bold text-neutral-800">
+              {lang === 'zh' ? '• 直接修改底层 JSON，网页与磁盘双向同步' : '• Edits data/family.json directly'}
+            </span>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={onClose}
+                className="win98-btn px-4 py-1 text-xs font-bold text-black"
+              >
+                {lang === 'zh' ? '取消' : 'Cancel'}
+              </button>
+              <button
+                onClick={handleSave}
+                className="win98-btn px-5 py-1 text-xs font-black text-black bg-[#d4d0c8]"
+              >
+                {lang === 'zh' ? '保存更改 (Save)' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
