@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   X, User, Save, Plus, Trash2, Heart, Tag, Calendar, 
   MapPin, Briefcase, Church, Globe, Sparkles, Cross, Check,
-  FileText, ExternalLink, Images, Crop, Upload, Camera
+  FileText, ExternalLink, Images, Crop, Upload, Camera,
+  Search, Zap
 } from 'lucide-react';
 import { formatFullName, extractYear, getLifespan } from '../utils/genealogy';
 import { translations } from '../utils/i18n';
 import GalleryPhotoPickerModal from './GalleryPhotoPickerModal';
 import ImageCropperModal from './ImageCropperModal';
+import TabAutocompleteInput from './TabAutocompleteInput';
 
 export default function PersonModal({ 
   isOpen, 
@@ -82,9 +84,17 @@ export default function PersonModal({
   });
   const [newSpousesToCreate, setNewSpousesToCreate] = useState([]);
 
+  // Search queries for auto-typing & finding existing members to attach
+  const [parentSearchQuery, setParentSearchQuery] = useState('');
+  const [spouseSearchQuery, setSpouseSearchQuery] = useState('');
+  const [childSearchQuery, setChildSearchQuery] = useState('');
+
   useEffect(() => {
     setIsCreatingSpouseInline(false);
     setNewSpousesToCreate([]);
+    setParentSearchQuery('');
+    setSpouseSearchQuery('');
+    setChildSearchQuery('');
 
     if (initialData) {
       const bDate = initialData.birthDate || '';
@@ -343,6 +353,27 @@ export default function PersonModal({
     setFormData(prev => ({ ...prev, religions: [...(prev.religions || []), newEntry] }));
   };
 
+  const handleAddReligionWithName = (name) => {
+    const isFirst = (!formData.religions || formData.religions.length === 0);
+    const existing = [...(formData.religions || [])];
+    // If the last item is empty, fill it instead of appending
+    if (existing.length > 0 && !existing[existing.length - 1].name.trim()) {
+      existing[existing.length - 1].name = name;
+      setFormData(prev => ({ ...prev, religions: existing }));
+      return;
+    }
+    const newEntry = {
+      id: `relig-${Date.now()}`,
+      name: name,
+      startDate: '',
+      endDate: '',
+      isFinal: isFirst,
+      isDeathbedConversion: false,
+      notes: ''
+    };
+    setFormData(prev => ({ ...prev, religions: [...existing, newEntry] }));
+  };
+
   const handleSetFinalReligion = (index) => {
     setFormData(prev => {
       const updated = (prev.religions || []).map((r, i) => ({
@@ -458,6 +489,134 @@ export default function PersonModal({
 
   const availablePersons = allPersons.filter(p => !initialData || p.id !== initialData.id);
 
+  // 1. Filtered candidates for Autotyping Parents / Spouses / Children
+  const filteredParentCandidates = useMemo(() => {
+    if (!parentSearchQuery.trim()) return [];
+    const q = parentSearchQuery.toLowerCase();
+    return availablePersons
+      .filter(p => !(formData.parents || []).includes(p.id))
+      .filter(p => {
+        const full = `${p.firstName || ''} ${p.lastName || ''} ${p.chineseName || ''} ${p.christianName || ''} ${p.patronymic || ''}`.toLowerCase();
+        return full.includes(q);
+      })
+      .slice(0, 8);
+  }, [availablePersons, parentSearchQuery, formData.parents]);
+
+  const filteredSpouseCandidates = useMemo(() => {
+    if (!spouseSearchQuery.trim()) return [];
+    const q = spouseSearchQuery.toLowerCase();
+    return availablePersons
+      .filter(p => !(formData.spouses || []).includes(p.id))
+      .filter(p => {
+        const full = `${p.firstName || ''} ${p.lastName || ''} ${p.chineseName || ''} ${p.christianName || ''} ${p.patronymic || ''}`.toLowerCase();
+        return full.includes(q);
+      })
+      .slice(0, 8);
+  }, [availablePersons, spouseSearchQuery, formData.spouses]);
+
+  const filteredChildCandidates = useMemo(() => {
+    if (!childSearchQuery.trim()) return [];
+    const q = childSearchQuery.toLowerCase();
+    return availablePersons
+      .filter(p => !(formData.children || []).includes(p.id))
+      .filter(p => {
+        const full = `${p.firstName || ''} ${p.lastName || ''} ${p.chineseName || ''} ${p.christianName || ''} ${p.patronymic || ''}`.toLowerCase();
+        return full.includes(q);
+      })
+      .slice(0, 8);
+  }, [availablePersons, childSearchQuery, formData.children]);
+
+  // 2. Comprehensive Auto-Complete Datalist Collections from Database
+  const religionPresets = useMemo(() => [
+    'Catholicism',
+    'Catholic',
+    'Momolianism',
+    'Christianity',
+    'Protestantism',
+    'Islam',
+    'Methodist',
+    'Anglican',
+    'Seventh-day Adventist',
+    'Buddhism',
+    'Taoism'
+  ], []);
+
+  const allReligionsList = useMemo(() => {
+    const set = new Set(religionPresets);
+    allPersons.forEach(p => {
+      (p.religions || []).forEach(r => {
+        if (r.name && r.name.trim()) set.add(r.name.trim());
+      });
+    });
+    return Array.from(set).sort();
+  }, [allPersons, religionPresets]);
+
+  const detectedFather = useMemo(() => {
+    const parentPersons = (formData.parents || []).map(id => allPersons.find(p => p.id === id)).filter(Boolean);
+    return parentPersons.find(p => p.gender === 'male');
+  }, [formData.parents, allPersons]);
+
+  const nameSuggestions = useMemo(() => {
+    const firstNames = new Set();
+    const lastNames = new Set();
+    const christianNames = new Set([
+      'Martha', 'Mary', 'Maria Magdalena', 'Mary Rosalind', 'Lazarus', 'Josue', 
+      'Leo', 'Joseph', 'David', 'John', 'Michael', 'Peter', 'Paul', 'Francis', 'Anthony'
+    ]);
+    const patronymics = new Set();
+    const chineseNames = new Set();
+
+    if (detectedFather) {
+      const fatherName = detectedFather.firstName || detectedFather.chineseName || '';
+      if (fatherName) {
+        const prefix = formData.gender === 'female' ? 'binti' : 'bin';
+        patronymics.add(`${prefix} ${fatherName}`.trim());
+      }
+    }
+
+    allPersons.forEach(p => {
+      if (p.firstName?.trim()) firstNames.add(p.firstName.trim());
+      if (p.lastName?.trim()) lastNames.add(p.lastName.trim());
+      if (p.christianName?.trim()) christianNames.add(p.christianName.trim());
+      if (p.patronymic?.trim()) patronymics.add(p.patronymic.trim());
+      if (p.chineseName?.trim()) chineseNames.add(p.chineseName.trim());
+    });
+
+    return {
+      firstNames: Array.from(firstNames).sort(),
+      lastNames: Array.from(lastNames).sort(),
+      christianNames: Array.from(christianNames).sort(),
+      patronymics: Array.from(patronymics).sort(),
+      chineseNames: Array.from(chineseNames).sort()
+    };
+  }, [allPersons, detectedFather, formData.gender]);
+
+  const placeSuggestions = useMemo(() => {
+    const places = new Set();
+    allPersons.forEach(p => {
+      if (p.birthPlace?.trim()) places.add(p.birthPlace.trim());
+      if (p.deathPlace?.trim()) places.add(p.deathPlace.trim());
+      if (p.burialPlace?.trim()) places.add(p.burialPlace.trim());
+    });
+    return Array.from(places).sort();
+  }, [allPersons]);
+
+  const ethnicitySuggestions = useMemo(() => {
+    const set = new Set(['Kadazan', 'Dusun', 'Chinese', 'Hakka', 'Cantonese', 'Malay', 'Bajau', 'Murut', 'Rungus', 'Eurasian']);
+    allPersons.forEach(p => {
+      if (p.ethnicity?.trim()) set.add(p.ethnicity.trim());
+    });
+    return Array.from(set).sort();
+  }, [allPersons]);
+
+  const occupationSuggestions = useMemo(() => {
+    const set = new Set();
+    allPersons.forEach(p => {
+      if (p.occupation?.trim()) set.add(p.occupation.trim());
+    });
+    return Array.from(set).sort();
+  }, [allPersons]);
+
   return (
     <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="relative w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -498,10 +657,11 @@ export default function PersonModal({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">{t.firstName} *</label>
-                <input
-                  type="text"
+                <TabAutocompleteInput
                   value={formData.firstName}
                   onChange={e => setFormData({ ...formData, firstName: e.target.value })}
+                  suggestions={nameSuggestions.firstNames}
+                  list="firstnames-datalist"
                   placeholder="e.g. David"
                   className="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500 transition"
                 />
@@ -509,10 +669,11 @@ export default function PersonModal({
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">{t.lastName}</label>
-                <input
-                  type="text"
+                <TabAutocompleteInput
                   value={formData.lastName}
                   onChange={e => setFormData({ ...formData, lastName: e.target.value })}
+                  suggestions={nameSuggestions.lastNames}
+                  list="lastnames-datalist"
                   placeholder="e.g. Chen"
                   className="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500 transition"
                 />
@@ -520,10 +681,11 @@ export default function PersonModal({
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">{t.maidenName}</label>
-                <input
-                  type="text"
+                <TabAutocompleteInput
                   value={formData.maidenName}
                   onChange={e => setFormData({ ...formData, maidenName: e.target.value })}
+                  suggestions={nameSuggestions.lastNames}
+                  list="lastnames-datalist"
                   placeholder="Optional birth surname"
                   className="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500 transition"
                 />
@@ -537,21 +699,43 @@ export default function PersonModal({
                   <Church className="w-3.5 h-3.5 mr-1 text-indigo-400" />
                   {t.christianName}
                 </label>
-                <input
-                  type="text"
+                <TabAutocompleteInput
                   value={formData.christianName}
                   onChange={e => setFormData({ ...formData, christianName: e.target.value })}
+                  suggestions={nameSuggestions.christianNames}
+                  list="christiannames-datalist"
                   placeholder={t.christianNamePlaceholder}
                   className="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500 transition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  {t.patronymic}
-                </label>
-                <input
-                  type="text"
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-slate-300">
+                    {t.patronymic}
+                  </label>
+                  {detectedFather && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const fatherName = detectedFather.firstName || detectedFather.chineseName || '';
+                        const prefix = formData.gender === 'female' ? 'binti' : 'bin';
+                        const patVal = `${prefix} ${fatherName}`.trim();
+                        setFormData(prev => ({
+                          ...prev,
+                          patronymic: patVal,
+                          ...(!prev.lastName?.trim() || prev.lastName === prev.patronymic ? { lastName: patVal } : {})
+                        }));
+                      }}
+                      className="text-[10px] text-amber-400 hover:text-amber-300 flex items-center space-x-1"
+                      title={lang === 'zh' ? '根据已关联父亲自动生成父称' : 'Auto-generate patronymic from connected father'}
+                    >
+                      <Zap className="w-3 h-3" />
+                      <span>{formData.gender === 'female' ? 'binti' : 'bin'} {detectedFather.firstName || detectedFather.chineseName}</span>
+                    </button>
+                  )}
+                </div>
+                <TabAutocompleteInput
                   value={formData.patronymic}
                   onChange={e => {
                     const newPatronymic = e.target.value;
@@ -570,6 +754,8 @@ export default function PersonModal({
                       setFormData(prev => ({ ...prev, lastName: prev.patronymic.trim() }));
                     }
                   }}
+                  suggestions={nameSuggestions.patronymics}
+                  list="patronymics-datalist"
                   placeholder={t.patronymicPlaceholder}
                   className="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500 transition"
                 />
@@ -583,10 +769,10 @@ export default function PersonModal({
                   <Globe className="w-3.5 h-3.5 mr-1" />
                   {t.chineseName}
                 </label>
-                <input
-                  type="text"
+                <TabAutocompleteInput
                   value={formData.chineseName}
                   onChange={e => setFormData({ ...formData, chineseName: e.target.value })}
+                  suggestions={nameSuggestions.chineseNames}
                   placeholder={lang === 'zh' ? '如：陈大卫、李美华 (选填)' : 'e.g. 陈大卫 (Optional)'}
                   className="w-full px-3 py-2 bg-slate-800/80 border border-amber-500/40 rounded-xl text-amber-100 text-sm focus:outline-none focus:border-amber-400 transition"
                 />
@@ -594,10 +780,11 @@ export default function PersonModal({
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">{t.ethnicity}</label>
-                <input
-                  type="text"
+                <TabAutocompleteInput
                   value={formData.ethnicity}
                   onChange={e => setFormData({ ...formData, ethnicity: e.target.value })}
+                  suggestions={ethnicitySuggestions}
+                  list="ethnicities-datalist"
                   placeholder={t.ethnicityPlaceholder}
                   className="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500 transition"
                 />
@@ -635,10 +822,11 @@ export default function PersonModal({
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">{t.occupation}</label>
-                <input
-                  type="text"
+                <TabAutocompleteInput
                   value={formData.occupation}
                   onChange={e => setFormData({ ...formData, occupation: e.target.value })}
+                  suggestions={occupationSuggestions}
+                  list="occupations-datalist"
                   placeholder="e.g. Architect, Professor"
                   className="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500 transition"
                 />
@@ -805,10 +993,11 @@ export default function PersonModal({
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">{t.birthPlace}</label>
-                <input
-                  type="text"
+                <TabAutocompleteInput
                   value={formData.birthPlace}
                   onChange={e => setFormData({ ...formData, birthPlace: e.target.value })}
+                  suggestions={placeSuggestions}
+                  list="places-datalist"
                   placeholder="e.g. Edinburgh, Scotland or Boston, MA"
                   className="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500 transition"
                 />
@@ -863,10 +1052,11 @@ export default function PersonModal({
 
                   <div>
                     <label className="block text-xs font-medium text-slate-300 mb-1">{t.deathPlace}</label>
-                    <input
-                      type="text"
+                    <TabAutocompleteInput
                       value={formData.deathPlace}
                       onChange={e => setFormData({ ...formData, deathPlace: e.target.value })}
+                      suggestions={placeSuggestions}
+                      list="places-datalist"
                       placeholder="e.g. Seattle, WA, USA"
                       className="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500 transition"
                     />
@@ -879,10 +1069,11 @@ export default function PersonModal({
                     <MapPin className="w-3.5 h-3.5 mr-1 text-rose-400" />
                     {t.burialSite}
                   </label>
-                  <input
-                    type="text"
+                  <TabAutocompleteInput
                     value={formData.burialPlace}
                     onChange={e => setFormData({ ...formData, burialPlace: e.target.value })}
+                    suggestions={placeSuggestions}
+                    list="places-datalist"
                     placeholder={t.burialSitePlaceholder}
                     className="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500 transition"
                   />
@@ -908,26 +1099,48 @@ export default function PersonModal({
               </button>
             </div>
 
+            {/* Quick Auto-Type Religion Chips */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-1 pb-1">
+              <span className="text-[11px] text-slate-400 mr-1 flex items-center">
+                <Zap className="w-3 h-3 mr-0.5 text-amber-400" />
+                {lang === 'zh' ? '快速填选:' : 'Quick Select:'}
+              </span>
+              {['Catholicism', 'Momolianism', 'Islam', 'Christianity', 'Protestantism', 'Buddhism', 'Taoism', 'Seventh-day Adventist'].map(rel => (
+                <button
+                  key={rel}
+                  type="button"
+                  onClick={() => handleAddReligionWithName(rel)}
+                  className="px-2 py-0.5 rounded-full text-[11px] bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition flex items-center space-x-1"
+                >
+                  <Plus className="w-2.5 h-2.5" />
+                  <span>{rel}</span>
+                </button>
+              ))}
+            </div>
+
             {formData.religions.length === 0 ? (
               <p className="text-xs text-slate-500 italic">
-                {lang === 'zh' ? '暂未添加宗教信仰记录。点击右上角“添加宗教信仰”可记录信仰起止年与临终皈依。' : 'No religious records yet. Click "+ Add Religion Record" to specify faith dates or deathbed conversion.'}
+                {lang === 'zh' ? '暂未添加宗教信仰记录。点击上方快捷按钮或右上角“添加宗教信仰”可记录信仰起止年与临终皈依。' : 'No religious records yet. Click a quick pill above or "+ Add Religion Record" to specify faith dates or deathbed conversion.'}
               </p>
             ) : (
               <div className="space-y-3">
                 {formData.religions.map((relig, idx) => (
                   <div key={relig.id || idx} className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <input
-                        type="text"
-                        value={relig.name}
-                        onChange={e => handleUpdateReligion(idx, 'name', e.target.value)}
-                        placeholder="Religion (e.g. Buddhism, Catholic, Taoist, Methodist...)"
-                        className="flex-1 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-amber-400 mr-2"
-                      />
+                      <div className="flex-1 mr-2">
+                        <TabAutocompleteInput
+                          value={relig.name}
+                          onChange={e => handleUpdateReligion(idx, 'name', e.target.value)}
+                          suggestions={allReligionsList}
+                          list="religions-global-datalist"
+                          placeholder="Religion (e.g. Catholicism, Momolianism, Islam, Protestantism...)"
+                          className="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
                       <button
                         type="button"
                         onClick={() => handleRemoveReligion(idx)}
-                        className="text-slate-500 hover:text-rose-400 p-1"
+                        className="text-slate-500 hover:text-rose-400 p-1 shrink-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -1016,6 +1229,55 @@ export default function PersonModal({
                   );
                 })}
               </div>
+
+              {/* Typeahead Search for Parents */}
+              <div className="relative mb-2">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400 pointer-events-none z-10" />
+                  <TabAutocompleteInput
+                    value={parentSearchQuery}
+                    onChange={e => setParentSearchQuery(e.target.value)}
+                    suggestions={filteredParentCandidates.map(p => formatFullName(p, lang))}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && filteredParentCandidates.length > 0) {
+                        e.preventDefault();
+                        setFormData(prev => ({ ...prev, parents: [...(prev.parents || []), filteredParentCandidates[0].id] }));
+                        setParentSearchQuery('');
+                      }
+                    }}
+                    placeholder={lang === 'zh' ? '输入姓名快速搜索并添加父母...' : 'Type name to search & attach parent...'}
+                    className="w-full pl-8 pr-7 py-1.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white text-xs focus:outline-none focus:border-indigo-500 transition"
+                  />
+                  {parentSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setParentSearchQuery('')}
+                      className="absolute right-2.5 top-2 text-slate-400 hover:text-white z-20"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+                {filteredParentCandidates.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden divide-y divide-slate-800">
+                    {filteredParentCandidates.map(p => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, parents: [...(prev.parents || []), p.id] }));
+                          setParentSearchQuery('');
+                        }}
+                        className="w-full text-left px-3 py-2 hover:bg-indigo-600/20 text-xs text-slate-200 hover:text-white flex items-center justify-between transition"
+                      >
+                        <span className="font-medium">{formatFullName(p, lang)}</span>
+                        <span className="text-[11px] text-slate-400">({p.gender === 'female' ? (lang === 'zh' ? '女' : 'Female') : (lang === 'zh' ? '男' : 'Male')}, {getLifespan(p, lang)})</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <select
                 value=""
                 onChange={e => {
@@ -1025,7 +1287,7 @@ export default function PersonModal({
                 }}
                 className="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500 transition"
               >
-                <option value="">+ {lang === 'zh' ? '选择并关联父母...' : 'Select parent to attach...'}</option>
+                <option value="">+ {lang === 'zh' ? '或从下拉列表中选择父母...' : 'Or select parent from dropdown...'}</option>
                 {availablePersons.filter(p => !(formData.parents || []).includes(p.id)).map(p => (
                   <option key={p.id} value={p.id}>{formatFullName(p, lang)} ({p.gender || '?'})</option>
                 ))}
@@ -1140,10 +1402,11 @@ export default function PersonModal({
                               <MapPin className="w-3 h-3 mr-1 text-slate-400" />
                               {t.marriagePlace || 'Marriage Place'}
                             </label>
-                            <input
-                              type="text"
+                            <TabAutocompleteInput
                               value={partnerDetail.marriagePlace || partnerDetail.place || ''}
                               onChange={e => handlePartnerFieldChange(spouseId, 'marriagePlace', e.target.value)}
+                              suggestions={placeSuggestions}
+                              list="places-datalist"
                               placeholder={lang === 'zh' ? '如：圣米迦勒教堂 / 兵南邦' : 'e.g. St. Michael Church / Penampang'}
                               className="w-full bg-slate-800 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-pink-500"
                             />
@@ -1199,6 +1462,62 @@ export default function PersonModal({
                     </button>
                   </div>
 
+                  {/* Typeahead Search for Spouses */}
+                  <div className="relative">
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400 pointer-events-none z-10" />
+                      <TabAutocompleteInput
+                        value={spouseSearchQuery}
+                        onChange={e => setSpouseSearchQuery(e.target.value)}
+                        suggestions={filteredSpouseCandidates.map(p => formatFullName(p, lang))}
+                        placeholder={lang === 'zh' ? '输入姓名快速搜索已有族人并关联为配偶...' : 'Type name to search & attach existing spouse...'}
+                        className="w-full pl-8 pr-7 py-1.5 bg-slate-900 border border-pink-500/30 rounded-xl text-white text-xs focus:outline-none focus:border-pink-500 transition"
+                      />
+                      {spouseSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setSpouseSearchQuery('')}
+                          className="absolute right-2.5 top-2 text-slate-400 hover:text-white z-20"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                    {filteredSpouseCandidates.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden divide-y divide-slate-800">
+                        {filteredSpouseCandidates.map(p => {
+                          const defaultOrder = (formData.spouses || []).length === 0 ? 'first_spouse' : ((formData.spouses || []).length === 1 ? 'second_spouse' : 'third_spouse');
+                          const isDeceased = !p.isLiving;
+                          return (
+                            <button
+                              key={p.id}
+                              type="button"
+                              onClick={() => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  spouses: [...(prev.spouses || []), p.id],
+                                  partnerDetails: {
+                                    ...(prev.partnerDetails || {}),
+                                    [p.id]: {
+                                      status: defaultOrder,
+                                      marriageState: isDeceased ? 'death' : 'current',
+                                      notes: ''
+                                    }
+                                  }
+                                }));
+                                setSpouseSearchQuery('');
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-pink-600/20 text-xs text-slate-200 hover:text-white flex items-center justify-between transition"
+                            >
+                              <span className="font-medium">{formatFullName(p, lang)}</span>
+                              <span className="text-[11px] text-slate-400">({p.gender === 'female' ? (lang === 'zh' ? '女' : 'Female') : (lang === 'zh' ? '男' : 'Male')}, {getLifespan(p, lang)})</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
                   <select
                     value=""
                     onChange={e => {
@@ -1223,7 +1542,7 @@ export default function PersonModal({
                     }}
                     className="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-pink-500 transition"
                   >
-                    <option value="">+ {lang === 'zh' ? '或从已有族人中选择并关联为配偶...' : 'Or select existing member as spouse...'}</option>
+                    <option value="">+ {lang === 'zh' ? '或从已有族人下拉列表中选择...' : 'Or select existing member from dropdown...'}</option>
                     {availablePersons.filter(p => !(formData.spouses || []).includes(p.id)).map(p => (
                       <option key={p.id} value={p.id}>{formatFullName(p, lang)} ({p.gender === 'female' ? (lang === 'zh' ? '女' : 'Female') : (lang === 'zh' ? '男' : 'Male')})</option>
                     ))}
@@ -1249,29 +1568,31 @@ export default function PersonModal({
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <div>
                       <label className="block text-[11px] text-slate-400 mb-1">{t.firstName} *</label>
-                      <input
-                        type="text"
+                      <TabAutocompleteInput
                         value={inlineSpouse.firstName}
                         onChange={e => setInlineSpouse(s => ({ ...s, firstName: e.target.value }))}
+                        suggestions={nameSuggestions.firstNames}
+                        list="firstnames-datalist"
                         placeholder={lang === 'zh' ? '例如：Annie 或 Darmih' : 'e.g. Annie or Darmih'}
                         className="w-full px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-pink-500"
                       />
                     </div>
                     <div>
                       <label className="block text-[11px] text-slate-400 mb-1">{t.lastName}</label>
-                      <input
-                        type="text"
+                      <TabAutocompleteInput
                         value={inlineSpouse.lastName}
                         onChange={e => setInlineSpouse(s => ({ ...s, lastName: e.target.value }))}
+                        suggestions={nameSuggestions.lastNames}
+                        list="lastnames-datalist"
                         className="w-full px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-pink-500"
                       />
                     </div>
                     <div>
                       <label className="block text-[11px] text-slate-400 mb-1">{t.chineseName}</label>
-                      <input
-                        type="text"
+                      <TabAutocompleteInput
                         value={inlineSpouse.chineseName}
                         onChange={e => setInlineSpouse(s => ({ ...s, chineseName: e.target.value }))}
+                        suggestions={nameSuggestions.chineseNames}
                         placeholder="中文全名"
                         className="w-full px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-pink-500"
                       />
@@ -1357,10 +1678,11 @@ export default function PersonModal({
                       </div>
                       <div>
                         <label className="block text-[11px] text-slate-400 mb-1">{t.burialSite}</label>
-                        <input
-                          type="text"
+                        <TabAutocompleteInput
                           value={inlineSpouse.burialPlace}
                           onChange={e => setInlineSpouse(s => ({ ...s, burialPlace: e.target.value }))}
+                          suggestions={placeSuggestions}
+                          list="places-datalist"
                           placeholder={lang === 'zh' ? '墓地 / 墓园地穴' : 'Cemetery / Burial site'}
                           className="w-full px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-pink-500"
                         />
@@ -1389,10 +1711,11 @@ export default function PersonModal({
                         <MapPin className="w-3 h-3 mr-1 text-slate-400" />
                         {t.marriagePlace || 'Marriage Place'}
                       </label>
-                      <input
-                        type="text"
+                      <TabAutocompleteInput
                         value={inlineSpouse.marriagePlace || ''}
                         onChange={e => setInlineSpouse(s => ({ ...s, marriagePlace: e.target.value }))}
+                        suggestions={placeSuggestions}
+                        list="places-datalist"
                         placeholder={lang === 'zh' ? '如：圣米迦勒教堂 / 兵南邦' : 'e.g. St. Michael Church / Penampang'}
                         className="w-full px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-pink-500"
                       />
@@ -1450,6 +1773,55 @@ export default function PersonModal({
                   );
                 })}
               </div>
+
+              {/* Typeahead Search for Children */}
+              <div className="relative mb-2">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400 pointer-events-none z-10" />
+                  <TabAutocompleteInput
+                    value={childSearchQuery}
+                    onChange={e => setChildSearchQuery(e.target.value)}
+                    suggestions={filteredChildCandidates.map(p => formatFullName(p, lang))}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && filteredChildCandidates.length > 0) {
+                        e.preventDefault();
+                        setFormData(prev => ({ ...prev, children: [...(prev.children || []), filteredChildCandidates[0].id] }));
+                        setChildSearchQuery('');
+                      }
+                    }}
+                    placeholder={lang === 'zh' ? '输入姓名快速搜索并添加子女...' : 'Type name to search & attach child...'}
+                    className="w-full pl-8 pr-7 py-1.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white text-xs focus:outline-none focus:border-indigo-500 transition"
+                  />
+                  {childSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setChildSearchQuery('')}
+                      className="absolute right-2.5 top-2 text-slate-400 hover:text-white z-20"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+                {filteredChildCandidates.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden divide-y divide-slate-800">
+                    {filteredChildCandidates.map(p => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, children: [...(prev.children || []), p.id] }));
+                          setChildSearchQuery('');
+                        }}
+                        className="w-full text-left px-3 py-2 hover:bg-emerald-600/20 text-xs text-slate-200 hover:text-white flex items-center justify-between transition"
+                      >
+                        <span className="font-medium">{formatFullName(p, lang)}</span>
+                        <span className="text-[11px] text-slate-400">({p.gender === 'female' ? (lang === 'zh' ? '女' : 'Female') : (lang === 'zh' ? '男' : 'Male')}, {getLifespan(p, lang)})</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <select
                 value=""
                 onChange={e => {
@@ -1459,7 +1831,7 @@ export default function PersonModal({
                 }}
                 className="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500 transition"
               >
-                <option value="">+ {lang === 'zh' ? '选择并关联子女后代...' : 'Select child to attach...'}</option>
+                <option value="">+ {lang === 'zh' ? '或从子女下拉列表中选择...' : 'Or select child from dropdown...'}</option>
                 {availablePersons.filter(p => !(formData.children || []).includes(p.id)).map(p => (
                   <option key={p.id} value={p.id}>{formatFullName(p, lang)}</option>
                 ))}
@@ -1663,6 +2035,32 @@ export default function PersonModal({
               <span>{t.saveAndSync}</span>
             </button>
           </div>
+
+          {/* Autotyping Datalists for Global Suggestions */}
+          <datalist id="religions-global-datalist">
+            {allReligionsList.map(r => <option key={r} value={r} />)}
+          </datalist>
+          <datalist id="firstnames-datalist">
+            {nameSuggestions.firstNames.map(n => <option key={n} value={n} />)}
+          </datalist>
+          <datalist id="lastnames-datalist">
+            {nameSuggestions.lastNames.map(n => <option key={n} value={n} />)}
+          </datalist>
+          <datalist id="christiannames-datalist">
+            {nameSuggestions.christianNames.map(n => <option key={n} value={n} />)}
+          </datalist>
+          <datalist id="patronymics-datalist">
+            {nameSuggestions.patronymics.map(n => <option key={n} value={n} />)}
+          </datalist>
+          <datalist id="places-datalist">
+            {placeSuggestions.map(p => <option key={p} value={p} />)}
+          </datalist>
+          <datalist id="ethnicities-datalist">
+            {ethnicitySuggestions.map(e => <option key={e} value={e} />)}
+          </datalist>
+          <datalist id="occupations-datalist">
+            {occupationSuggestions.map(o => <option key={o} value={o} />)}
+          </datalist>
         </form>
 
         {/* Gallery Photo Picker Modal */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   GitFork, Users, Network, Calendar, BarChart3, Plus, 
   FileCode, Search, RefreshCw, Sparkles, CheckCircle2, Globe, Keyboard,
@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { formatFullName } from '../utils/genealogy';
 import { translations } from '../utils/i18n';
+import TabAutocompleteInput from './TabAutocompleteInput';
 
 export default function Navbar({
   currentView,
@@ -26,6 +27,10 @@ export default function Navbar({
   const t = translations[lang] || translations.en;
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const personNameSuggestions = useMemo(() => {
+    return persons.map(p => formatFullName(p, lang)).filter(Boolean);
+  }, [persons, lang]);
 
   const searchResults = searchQuery.trim() 
     ? persons.filter(p => {
@@ -181,17 +186,25 @@ export default function Navbar({
         {/* Quick Search Dropdown */}
         <div className="relative">
           <div className="relative">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-            <input
-              type="text"
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5 z-10 pointer-events-none" />
+            <TabAutocompleteInput
               value={searchQuery}
               onChange={e => {
                 setSearchQuery(e.target.value);
                 setIsSearchOpen(true);
               }}
               onFocus={() => setIsSearchOpen(true)}
+              suggestions={personNameSuggestions}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && searchResults.length > 0) {
+                  e.preventDefault();
+                  onSelectPerson(searchResults[0]);
+                  setIsSearchOpen(false);
+                  setSearchQuery('');
+                }
+              }}
               placeholder={t.searchPlaceholder}
-              className="w-28 sm:w-36 lg:w-44 pl-8 pr-3 py-1.5 bg-slate-950/80 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-indigo-500 transition"
+              className="w-32 sm:w-40 lg:w-48 pl-8 pr-3 py-1.5 bg-slate-950/80 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-indigo-500 transition"
             />
           </div>
 
