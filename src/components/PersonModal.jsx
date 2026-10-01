@@ -20,7 +20,8 @@ export default function PersonModal({
   defaultParentId = null,
   defaultSpouseId = null,
   photos = [],
-  lang = 'en'
+  lang = 'en',
+  theme = 'win98'
 }) {
   const t = translations[lang] || translations.en;
 
@@ -78,7 +79,7 @@ export default function PersonModal({
     birthDate: '',
     deathDate: '',
     burialPlace: '',
-    status: 'first_spouse',
+    status: 'spouse',
     marriageState: 'current',
     notes: ''
   });
@@ -140,7 +141,7 @@ export default function PersonModal({
       const newSpouses = defaultSpouseId ? [defaultSpouseId] : [];
       const initPartnerDetails = defaultSpouseId ? {
         [defaultSpouseId]: {
-          status: 'first_spouse',
+          status: 'spouse',
           marriageState: isSpouseDeceased ? 'death' : 'current',
           notes: ''
         }
@@ -178,8 +179,6 @@ export default function PersonModal({
     }
   }, [initialData, defaultParentId, defaultSpouseId, isOpen]);
 
-  if (!isOpen) return null;
-
   const handleSubmit = (e) => {
     e.preventDefault();
     const firstName = String(formData.firstName || '').trim();
@@ -204,7 +203,7 @@ export default function PersonModal({
     (formData.spouses || []).forEach((spouseId, index) => {
       const spouseObj = allPersons.find(p => p.id === spouseId) || newSpousesToCreate.find(p => p.id === spouseId);
       const isDeceased = spouseObj ? !spouseObj.isLiving : false;
-      const defaultOrder = index === 0 ? 'first_spouse' : (index === 1 ? 'second_spouse' : 'third_spouse');
+      const defaultOrder = 'spouse';
       
       if (!sanitizedPartnerDetails[spouseId]) {
         sanitizedPartnerDetails[spouseId] = {
@@ -256,7 +255,7 @@ export default function PersonModal({
         partnerDetails: {
           ...(ns.partnerDetails || {}),
           [currentPersonId]: {
-            status: ns.status === 'second_spouse' ? 'first_spouse' : (ns.status === 'remarriage_after_death' ? 'first_spouse' : 'first_spouse'),
+            status: 'spouse',
             marriageState: !(formData.isLiving ?? true) ? 'death' : 'current',
             notes: ''
           }
@@ -456,7 +455,7 @@ export default function PersonModal({
       spouses: initialData?.id ? [initialData.id] : [],
       partnerDetails: initialData?.id ? {
         [initialData.id]: {
-          status: inlineSpouse.status === 'second_spouse' ? 'first_spouse' : (inlineSpouse.status === 'remarriage_after_death' ? 'first_spouse' : inlineSpouse.status),
+          status: inlineSpouse.status === 'second_spouse' ? 'spouse' : (inlineSpouse.status === 'remarriage_after_death' ? 'spouse' : (inlineSpouse.status || 'spouse')),
           marriageState: !(formData.isLiving ?? true) ? 'death' : (inlineSpouse.isLiving ? 'current' : 'death'),
           marriageDate: inlineSpouse.marriageDate || '',
           marriagePlace: inlineSpouse.marriagePlace || '',
@@ -476,7 +475,7 @@ export default function PersonModal({
       partnerDetails: {
         ...(prev.partnerDetails || {}),
         [newSpouseId]: {
-          status: inlineSpouse.status || 'first_spouse',
+          status: inlineSpouse.status || 'spouse',
           marriageState: inlineSpouse.marriageState || (!inlineSpouse.isLiving ? 'death' : 'current'),
           marriageDate: inlineSpouse.marriageDate || '',
           marriagePlace: inlineSpouse.marriagePlace || '',
@@ -492,39 +491,109 @@ export default function PersonModal({
   // 1. Filtered candidates for Autotyping Parents / Spouses / Children
   const filteredParentCandidates = useMemo(() => {
     if (!parentSearchQuery.trim()) return [];
-    const q = parentSearchQuery.toLowerCase();
+    const q = parentSearchQuery.trim().toLowerCase();
     return availablePersons
       .filter(p => !(formData.parents || []).includes(p.id))
       .filter(p => {
-        const full = `${p.firstName || ''} ${p.lastName || ''} ${p.chineseName || ''} ${p.christianName || ''} ${p.patronymic || ''}`.toLowerCase();
-        return full.includes(q);
+        const formatted = formatFullName(p, lang).toLowerCase();
+        const full = `${p.firstName || ''} ${p.lastName || ''} ${p.chineseName || ''} ${p.christianName || ''} ${p.patronymic || ''} ${p.maidenName || ''}`.toLowerCase();
+        return formatted.includes(q) || full.includes(q) || q.includes(formatted);
       })
       .slice(0, 8);
-  }, [availablePersons, parentSearchQuery, formData.parents]);
+  }, [availablePersons, parentSearchQuery, formData.parents, lang]);
 
   const filteredSpouseCandidates = useMemo(() => {
     if (!spouseSearchQuery.trim()) return [];
-    const q = spouseSearchQuery.toLowerCase();
+    const q = spouseSearchQuery.trim().toLowerCase();
     return availablePersons
       .filter(p => !(formData.spouses || []).includes(p.id))
       .filter(p => {
-        const full = `${p.firstName || ''} ${p.lastName || ''} ${p.chineseName || ''} ${p.christianName || ''} ${p.patronymic || ''}`.toLowerCase();
-        return full.includes(q);
+        const formatted = formatFullName(p, lang).toLowerCase();
+        const full = `${p.firstName || ''} ${p.lastName || ''} ${p.chineseName || ''} ${p.christianName || ''} ${p.patronymic || ''} ${p.maidenName || ''}`.toLowerCase();
+        return formatted.includes(q) || full.includes(q) || q.includes(formatted);
       })
       .slice(0, 8);
-  }, [availablePersons, spouseSearchQuery, formData.spouses]);
+  }, [availablePersons, spouseSearchQuery, formData.spouses, lang]);
 
   const filteredChildCandidates = useMemo(() => {
     if (!childSearchQuery.trim()) return [];
-    const q = childSearchQuery.toLowerCase();
+    const q = childSearchQuery.trim().toLowerCase();
     return availablePersons
       .filter(p => !(formData.children || []).includes(p.id))
       .filter(p => {
-        const full = `${p.firstName || ''} ${p.lastName || ''} ${p.chineseName || ''} ${p.christianName || ''} ${p.patronymic || ''}`.toLowerCase();
-        return full.includes(q);
+        const formatted = formatFullName(p, lang).toLowerCase();
+        const full = `${p.firstName || ''} ${p.lastName || ''} ${p.chineseName || ''} ${p.christianName || ''} ${p.patronymic || ''} ${p.maidenName || ''}`.toLowerCase();
+        return formatted.includes(q) || full.includes(q) || q.includes(formatted);
       })
       .slice(0, 8);
-  }, [availablePersons, childSearchQuery, formData.children]);
+  }, [availablePersons, childSearchQuery, formData.children, lang]);
+
+  // Helpers to register / attach matching person on Enter or Tab selection
+  const handleAttachParentFromQuery = () => {
+    if (!parentSearchQuery.trim()) return;
+    const q = parentSearchQuery.trim().toLowerCase();
+    const candidate = filteredParentCandidates[0] || availablePersons.find(p => 
+      !(formData.parents || []).includes(p.id) && (
+        formatFullName(p, lang).toLowerCase() === q ||
+        formatFullName(p, lang).toLowerCase().includes(q) ||
+        `${p.firstName || ''} ${p.lastName || ''}`.trim().toLowerCase() === q
+      )
+    );
+    if (candidate) {
+      setFormData(prev => ({
+        ...prev,
+        parents: Array.from(new Set([...(prev.parents || []), candidate.id]))
+      }));
+      setParentSearchQuery('');
+    }
+  };
+
+  const handleAttachSpouseFromQuery = () => {
+    if (!spouseSearchQuery.trim()) return;
+    const q = spouseSearchQuery.trim().toLowerCase();
+    const candidate = filteredSpouseCandidates[0] || availablePersons.find(p => 
+      !(formData.spouses || []).includes(p.id) && (
+        formatFullName(p, lang).toLowerCase() === q ||
+        formatFullName(p, lang).toLowerCase().includes(q) ||
+        `${p.firstName || ''} ${p.lastName || ''}`.trim().toLowerCase() === q
+      )
+    );
+    if (candidate) {
+      const isDeceased = !candidate.isLiving;
+      setFormData(prev => ({
+        ...prev,
+        spouses: Array.from(new Set([...(prev.spouses || []), candidate.id])),
+        partnerDetails: {
+          ...(prev.partnerDetails || {}),
+          [candidate.id]: {
+            status: 'spouse',
+            marriageState: isDeceased ? 'death' : 'current',
+            notes: ''
+          }
+        }
+      }));
+      setSpouseSearchQuery('');
+    }
+  };
+
+  const handleAttachChildFromQuery = () => {
+    if (!childSearchQuery.trim()) return;
+    const q = childSearchQuery.trim().toLowerCase();
+    const candidate = filteredChildCandidates[0] || availablePersons.find(p => 
+      !(formData.children || []).includes(p.id) && (
+        formatFullName(p, lang).toLowerCase() === q ||
+        formatFullName(p, lang).toLowerCase().includes(q) ||
+        `${p.firstName || ''} ${p.lastName || ''}`.trim().toLowerCase() === q
+      )
+    );
+    if (candidate) {
+      setFormData(prev => ({
+        ...prev,
+        children: Array.from(new Set([...(prev.children || []), candidate.id]))
+      }));
+      setChildSearchQuery('');
+    }
+  };
 
   // 2. Comprehensive Auto-Complete Datalist Collections from Database
   const religionPresets = useMemo(() => [
@@ -617,35 +686,91 @@ export default function PersonModal({
     return Array.from(set).sort();
   }, [allPersons]);
 
+  const allTagsList = useMemo(() => {
+    const set = new Set(['Immigrant', 'Veteran', 'Scholar', 'Merchant', 'Matriarch', 'Patriarch', 'Pioneer', 'Teacher']);
+    allPersons.forEach(p => {
+      (p.tags || []).forEach(tg => {
+        if (tg && tg.trim()) set.add(tg.trim());
+      });
+    });
+    return Array.from(set).sort();
+  }, [allPersons]);
+
+  if (!isOpen) return null;
+
   return (
     <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="relative w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className={`relative w-full max-w-3xl overflow-hidden shadow-2xl ${
+        theme === 'win98' 
+          ? 'win98-box' 
+          : 'bg-slate-900 border border-slate-800 rounded-2xl animate-in fade-in zoom-in-95 duration-200'
+      }`}>
         
+        {/* Win98 Window Titlebar */}
+        {theme === 'win98' && (
+          <div className="win98-title-navy px-2 py-0.5 flex items-center justify-between text-xs font-bold text-white select-none">
+            <div className="flex items-center space-x-1.5 truncate">
+              <span>{initialData ? '✎' : '➕'}</span>
+              <span>
+                {initialData ? (lang === 'zh' ? '族人属性编辑' : 'Properties') : (lang === 'zh' ? '新增登记族人' : 'Add Family Member')} — [Registry 1998]
+              </span>
+            </div>
+            <div className="flex items-center space-x-1 shrink-0">
+              <button type="button" onClick={onClose} className="win98-icon-btn">✕</button>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div className={`p-4 md:p-5 flex items-center justify-between ${
+          theme === 'win98' 
+            ? 'bg-[#c0c0c0] border-b border-gray-400' 
+            : 'border-b border-slate-800 bg-slate-950/60'
+        }`}>
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <div className={`w-10 h-10 flex items-center justify-center font-bold ${
+              theme === 'win98' 
+                ? 'win98-sunken rounded bg-white text-black' 
+                : 'rounded-xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400'
+            }`}>
               <User className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">
+              <h2 className={`text-lg md:text-xl font-black ${theme === 'win98' ? 'text-black' : 'text-white'}`}>
                 {initialData ? t.editMember : t.addMember}
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className={`text-xs ${theme === 'win98' ? 'text-gray-800 font-semibold' : 'text-slate-400'}`}>
                 {lang === 'zh' ? '支持续弦再婚、多配偶、墓园地穴、圣名教名与父称' : 'Supports remarriage, plural marriage, burial sites, Christian names, & patronymics'}
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {theme !== 'win98' && (
+            <button
+              onClick={onClose}
+              className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[78vh] overflow-y-auto">
+        <form 
+          onSubmit={handleSubmit}
+          onKeyDown={e => {
+            // Prevent premature full-profile submission on Enter in single-line inputs,
+            // while allowing explicit Cmd+Enter / Ctrl+Enter shortcut to save
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+              if (e.metaKey || e.ctrlKey) {
+                return;
+              }
+              e.preventDefault();
+            }
+          }}
+          className={`p-6 space-y-6 max-h-[78vh] overflow-y-auto ${
+            theme === 'win98' ? 'bg-[#c0c0c0] text-black font-semibold' : ''
+          }`}
+        >
           
           {/* Identity & Names */}
           <div className="space-y-4">
@@ -1125,7 +1250,11 @@ export default function PersonModal({
             ) : (
               <div className="space-y-3">
                 {formData.religions.map((relig, idx) => (
-                  <div key={relig.id || idx} className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2.5">
+                  <div 
+                    key={relig.id || idx} 
+                    onKeyDown={e => { if (e.key === 'Enter') e.preventDefault(); }}
+                    className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2.5"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex-1 mr-2">
                         <TabAutocompleteInput
@@ -1239,10 +1368,9 @@ export default function PersonModal({
                     onChange={e => setParentSearchQuery(e.target.value)}
                     suggestions={filteredParentCandidates.map(p => formatFullName(p, lang))}
                     onKeyDown={e => {
-                      if (e.key === 'Enter' && filteredParentCandidates.length > 0) {
+                      if (e.key === 'Enter') {
                         e.preventDefault();
-                        setFormData(prev => ({ ...prev, parents: [...(prev.parents || []), filteredParentCandidates[0].id] }));
-                        setParentSearchQuery('');
+                        handleAttachParentFromQuery();
                       }
                     }}
                     placeholder={lang === 'zh' ? '输入姓名快速搜索并添加父母...' : 'Type name to search & attach parent...'}
@@ -1304,7 +1432,7 @@ export default function PersonModal({
                     const s = allPersons.find(item => item.id === spouseId) || newSpousesToCreate.find(item => item.id === spouseId);
                     const partnerDetails = (formData.partnerDetails && typeof formData.partnerDetails === 'object') ? formData.partnerDetails : {};
                     const partnerDetail = partnerDetails[spouseId] || {};
-                    const currentStatus = partnerDetail.status || 'first_spouse';
+                    const currentStatus = partnerDetail.status || 'spouse';
                     const isDeceased = s ? !s.isLiving : (partnerDetail.marriageState === 'death');
                     const marriageState = partnerDetail.marriageState || (isDeceased ? 'death' : 'current');
                     const partnerNotes = partnerDetail.notes || '';
@@ -1350,12 +1478,12 @@ export default function PersonModal({
                               onChange={e => handlePartnerFieldChange(spouseId, 'status', e.target.value)}
                               className="w-full bg-slate-800 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-pink-500"
                             >
+                              <option value="spouse">{t.currentSpouse}</option>
                               <option value="first_spouse">{t.firstSpouse}</option>
                               <option value="second_spouse">{t.secondSpouse}</option>
                               <option value="third_spouse">{t.thirdSpouse}</option>
                               <option value="remarriage_after_death">{t.remarriageAfterDeath || t.remarriage}</option>
                               <option value="polygamous">{t.polygamous}</option>
-                              <option value="spouse">{t.currentSpouse}</option>
                               <option value="ex_spouse">{t.exSpouse}</option>
                               <option value="partner">{t.currentPartner}</option>
                               <option value="ex_partner">{t.exPartner}</option>
@@ -1437,7 +1565,7 @@ export default function PersonModal({
                       type="button"
                       onClick={() => {
                         const oppositeGender = formData.gender === 'female' ? 'male' : 'female';
-                        const defaultOrder = (formData.spouses || []).length === 0 ? 'first_spouse' : ((formData.spouses || []).length === 1 ? 'second_spouse' : 'third_spouse');
+                        const defaultOrder = 'spouse';
                         setInlineSpouse({
                           firstName: '',
                           lastName: formData.lastName || '',
@@ -1470,6 +1598,12 @@ export default function PersonModal({
                         value={spouseSearchQuery}
                         onChange={e => setSpouseSearchQuery(e.target.value)}
                         suggestions={filteredSpouseCandidates.map(p => formatFullName(p, lang))}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAttachSpouseFromQuery();
+                          }
+                        }}
                         placeholder={lang === 'zh' ? '输入姓名快速搜索已有族人并关联为配偶...' : 'Type name to search & attach existing spouse...'}
                         className="w-full pl-8 pr-7 py-1.5 bg-slate-900 border border-pink-500/30 rounded-xl text-white text-xs focus:outline-none focus:border-pink-500 transition"
                       />
@@ -1486,7 +1620,7 @@ export default function PersonModal({
                     {filteredSpouseCandidates.length > 0 && (
                       <div className="absolute top-full left-0 right-0 mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden divide-y divide-slate-800">
                         {filteredSpouseCandidates.map(p => {
-                          const defaultOrder = (formData.spouses || []).length === 0 ? 'first_spouse' : ((formData.spouses || []).length === 1 ? 'second_spouse' : 'third_spouse');
+                          const defaultOrder = 'spouse';
                           const isDeceased = !p.isLiving;
                           return (
                             <button
@@ -1525,7 +1659,7 @@ export default function PersonModal({
                         const newSpouseId = e.target.value;
                         const spouseObj = allPersons.find(p => p.id === newSpouseId);
                         const isDeceased = spouseObj ? !spouseObj.isLiving : false;
-                        const defaultOrder = (formData.spouses || []).length === 0 ? 'first_spouse' : ((formData.spouses || []).length === 1 ? 'second_spouse' : 'third_spouse');
+                        const defaultOrder = 'spouse';
                         setFormData(prev => ({
                           ...prev,
                           spouses: [...(prev.spouses || []), newSpouseId],
@@ -1550,7 +1684,15 @@ export default function PersonModal({
                 </div>
               ) : (
                 /* Inline Create Spouse Card */
-                <div className="p-3.5 rounded-xl bg-slate-900 border border-pink-500/40 space-y-3 animate-in fade-in-50 duration-150">
+                <div 
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleConfirmCreateInlineSpouse();
+                    }
+                  }}
+                  className="p-3.5 rounded-xl bg-slate-900 border border-pink-500/40 space-y-3 animate-in fade-in-50 duration-150"
+                >
                   <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                     <span className="text-xs font-bold text-pink-300 flex items-center">
                       <Heart className="w-3.5 h-3.5 mr-1.5 text-pink-400" />
@@ -1634,16 +1776,16 @@ export default function PersonModal({
                     <div>
                       <label className="block text-[11px] text-slate-400 mb-1">{t.marriageOrderForPerson}</label>
                       <select
-                        value={inlineSpouse.status}
+                        value={inlineSpouse.status || 'spouse'}
                         onChange={e => setInlineSpouse(s => ({ ...s, status: e.target.value }))}
                         className="w-full bg-slate-800 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-pink-500"
                       >
+                        <option value="spouse">{t.currentSpouse}</option>
                         <option value="first_spouse">{t.firstSpouse}</option>
                         <option value="second_spouse">{t.secondSpouse}</option>
                         <option value="third_spouse">{t.thirdSpouse}</option>
                         <option value="remarriage_after_death">{t.remarriageAfterDeath || t.remarriage}</option>
                         <option value="polygamous">{t.polygamous}</option>
-                        <option value="spouse">{t.currentSpouse}</option>
                         <option value="ex_spouse">{t.exSpouse}</option>
                         <option value="partner">{t.currentPartner}</option>
                         <option value="ex_partner">{t.exPartner}</option>
@@ -1783,10 +1925,9 @@ export default function PersonModal({
                     onChange={e => setChildSearchQuery(e.target.value)}
                     suggestions={filteredChildCandidates.map(p => formatFullName(p, lang))}
                     onKeyDown={e => {
-                      if (e.key === 'Enter' && filteredChildCandidates.length > 0) {
+                      if (e.key === 'Enter') {
                         e.preventDefault();
-                        setFormData(prev => ({ ...prev, children: [...(prev.children || []), filteredChildCandidates[0].id] }));
-                        setChildSearchQuery('');
+                        handleAttachChildFromQuery();
                       }
                     }}
                     placeholder={lang === 'zh' ? '输入姓名快速搜索并添加子女...' : 'Type name to search & attach child...'}
@@ -1875,12 +2016,12 @@ export default function PersonModal({
                 ))}
               </div>
               <div className="flex space-x-2">
-                <input
-                  type="text"
+                <TabAutocompleteInput
                   value={tagInput}
                   onChange={e => setTagInput(e.target.value)}
+                  suggestions={allTagsList}
                   onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); } }}
-                  placeholder="e.g. Immigrant, Veteran, Scholar (press Enter)"
+                  placeholder={lang === 'zh' ? '例如：移民、老兵、学者 (按Tab补全，回车添加)' : 'e.g. Immigrant, Veteran, Scholar (Tab to complete, Enter to add)'}
                   className="flex-1 px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500 transition"
                 />
                 <button
@@ -1952,7 +2093,17 @@ export default function PersonModal({
             )}
 
             {/* Quick Add Reference Sub-form */}
-            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2.5">
+            <div 
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  if (newRef.title.trim() || newRef.url.trim()) {
+                    handleAddReference();
+                  }
+                }
+              }}
+              className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2.5"
+            >
               <div className="text-xs font-semibold text-slate-300 flex items-center space-x-1">
                 <Plus className="w-3.5 h-3.5 text-indigo-400" />
                 <span>{t.addReference}</span>
@@ -2019,20 +2170,28 @@ export default function PersonModal({
           </div>
 
           {/* Action buttons */}
-          <div className="pt-4 border-t border-slate-800 flex items-center justify-end space-x-3">
+          <div className={`pt-4 flex items-center justify-end space-x-3 ${
+            theme === 'win98' ? 'border-t border-gray-400' : 'border-t border-slate-800'
+          }`}>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 text-sm font-medium transition"
+              className={theme === 'win98'
+                ? 'win98-btn px-4 py-1 text-xs font-bold text-black'
+                : 'px-4 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 text-sm font-medium transition'
+              }
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition shadow-lg shadow-indigo-600/30"
+              className={theme === 'win98'
+                ? 'win98-btn px-6 py-1 text-xs font-extrabold flex items-center space-x-1.5 text-black bg-[#d4d0c8]'
+                : 'flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition shadow-lg shadow-indigo-600/30'
+              }
             >
-              <Save className="w-4 h-4" />
-              <span>{t.saveAndSync}</span>
+              <Save className="w-4 h-4 text-emerald-800" />
+              <span>{theme === 'win98' ? (lang === 'zh' ? '确定保存 (OK)' : 'OK / Save') : t.saveAndSync}</span>
             </button>
           </div>
 

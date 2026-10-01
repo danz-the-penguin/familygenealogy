@@ -238,6 +238,12 @@ export function getAncestors(personId, personsMap) {
   return ancestors;
 }
 
+export function getOrdinal(n) {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
 export function getAncestorLabel(generation, gender, lineage = 'paternal') {
   const isFemale = gender === 'female';
 
@@ -255,7 +261,7 @@ export function getAncestorLabel(generation, gender, lineage = 'paternal') {
   if (generation === 4) {
     return isFemale ? '2nd Great-Grandmother' : '2nd Great-Grandfather';
   }
-  return isFemale ? `${generation - 2}th Great-Grandmother` : `${generation - 2}th Great-Grandfather`;
+  return isFemale ? `${getOrdinal(generation - 2)} Great-Grandmother` : `${getOrdinal(generation - 2)} Great-Grandfather`;
 }
 
 /**
@@ -300,7 +306,7 @@ export function getDescendantLabel(generation, gender) {
   if (generation === 1) return isFemale ? 'Daughter' : 'Son';
   if (generation === 2) return isFemale ? 'Granddaughter' : 'Grandson';
   if (generation === 3) return isFemale ? 'Great-Granddaughter' : 'Great-Grandson';
-  return isFemale ? `${generation - 2}th Great-Granddaughter` : `${generation - 2}th Great-Grandson`;
+  return isFemale ? `${getOrdinal(generation - 2)} Great-Granddaughter` : `${getOrdinal(generation - 2)} Great-Grandson`;
 }
 
 /**
@@ -364,8 +370,21 @@ export function findBloodLineagePath(personAId, personBId, mrcaId, personsMap, t
   const pathB = getLineageUp(personBId, mrcaId, personsMap);
   if (!pathA || !pathB) return null;
 
+  // Crucial check: neither person should appear as an intermediate node in the other's lineage to MRCA!
+  // If personBId is in pathA, personB is already personA's direct ancestor (or vice versa).
+  if (pathA.slice(0, -1).includes(personBId) || pathB.slice(0, -1).includes(personAId)) {
+    return null;
+  }
+
   // Combine: pathA up to MRCA, then reversed pathB down to Person B
   const fullIds = [...pathA, ...pathB.slice(0, -1).reverse()];
+
+  // If any node appears more than once, it is an invalid loop/cycle, not a simple path
+  const seenIds = new Set();
+  for (const id of fullIds) {
+    if (seenIds.has(id)) return null;
+    seenIds.add(id);
+  }
 
   return fullIds.map((id, idx) => {
     const p = personsMap.get(id);
@@ -646,7 +665,7 @@ function formatSpecificCousinDetails({ degree, removed, direction, descendant, l
   }
 
   return {
-    label: `${degree}th Cousin${removed > 0 ? ` ${removed}x removed` : ''}`,
+    label: `${getOrdinal(degree)} Cousin${removed > 0 ? ` ${removed}x removed` : ''}`,
     subtitle: `Extended cousin relationship`,
     chineseTerm: '远亲 (族表亲)'
   };
@@ -685,8 +704,7 @@ export function calculateRelationship(personAId, personBId, personsMap, relation
 
   if (!effectiveStatus) {
     if ((personA.spouses || []).includes(personBId)) {
-      const spouseIdx = (personA.spouses || []).indexOf(personBId);
-      effectiveStatus = spouseIdx === 0 ? 'first_spouse' : (spouseIdx === 1 ? 'second_spouse' : 'spouse');
+      effectiveStatus = 'spouse';
     } else if (rel) {
       effectiveStatus = rel.status || rel.type;
     }
@@ -825,8 +843,8 @@ export function calculateRelationship(personAId, personBId, personsMap, relation
       });
     } else {
       // General spouse / marriage
-      const title = isFemaleB ? `Wife ${statusStr}` : `Husband ${statusStr}`;
-      const chineseTitle = isFemaleB ? `妻子 ${zhStatusStr}` : `丈夫 ${zhStatusStr}`;
+      const title = `Spouse ${statusStr}`;
+      const chineseTitle = `配偶 ${zhStatusStr}`;
       candidates.push({
         title: title.trim(),
         chineseTitle: chineseTitle.trim(),
@@ -835,14 +853,14 @@ export function calculateRelationship(personAId, personBId, personsMap, relation
         notes: partnerDetail.notes || (isDeceased ? 'Spouse is deceased' : 'Current spouse'),
         path: [
           { id: personA.id, name: formatFullName(personA), role: 'Subject' },
-          { id: personB.id, name: formatFullName(personB), role: isFemaleB ? 'Wife' : 'Husband' }
+          { id: personB.id, name: formatFullName(personB), role: isFemaleB ? 'Spouse (Wife)' : 'Spouse (Husband)' }
         ]
       });
     }
   } else if ((personA.spouses || []).includes(personBId) || (personB.spouses || []).includes(personAId)) {
     const isDeceased = partnerDetail.marriageState === 'death' || !personB.isLiving;
-    const title = isFemaleB ? `Wife ${isDeceased ? '(Deceased)' : '(Current)'}` : `Husband ${isDeceased ? '(Deceased)' : '(Current)'}`;
-    const chineseTitle = isFemaleB ? `妻子 ${isDeceased ? '(已故)' : '(现任)'}` : `丈夫 ${isDeceased ? '(已故)' : '(现任)'}`;
+    const title = `Spouse ${isDeceased ? '(Deceased)' : '(Current)'}`;
+    const chineseTitle = `配偶 ${isDeceased ? '(已故)' : '(现任)'}`;
     candidates.push({
       title: title.trim(),
       chineseTitle: chineseTitle.trim(),
@@ -850,7 +868,7 @@ export function calculateRelationship(personAId, personBId, personsMap, relation
       priority: 1,
       path: [
         { id: personA.id, name: formatFullName(personA), role: 'Subject' },
-        { id: personB.id, name: formatFullName(personB), role: isFemaleB ? 'Wife' : 'Husband' }
+        { id: personB.id, name: formatFullName(personB), role: isFemaleB ? 'Spouse (Wife)' : 'Spouse (Husband)' }
       ]
     });
   }
@@ -1132,69 +1150,81 @@ export function calculateRelationship(personAId, personBId, personsMap, relation
   }
 
   // 7. Cousins (Evaluated through all common ancestors with degree >= 1)
-  const ancestorsB = getAncestors(personBId, personsMap);
-  const mapAncB = new Map();
-  ancestorsB.forEach(b => {
-    if (!mapAncB.has(b.person.id) || mapAncB.get(b.person.id).generation > b.generation) {
-      mapAncB.set(b.person.id, b);
-    }
-  });
+  // CRITICAL: Direct lineal ancestors, descendants, and siblings cannot be cousins!
+  const isDirectSibling = (personA.parents || []).some(pId => (personB.parents || []).includes(pId));
 
-  const cousinAncestors = [];
-  ancestorsA.forEach(a => {
-    if (mapAncB.has(a.person.id)) {
-      const b = mapAncB.get(a.person.id);
-      const d1 = a.generation;
-      const d2 = b.generation;
-      const degree = Math.min(d1, d2) - 1;
-      if (degree >= 1) {
-        cousinAncestors.push({
-          ancestor: a.person,
-          d1,
-          d2,
+  if (!foundAsAncestor && !foundAsDescendant && !isDirectSibling) {
+    const ancestorsB = getAncestors(personBId, personsMap);
+    const mapAncB = new Map();
+    ancestorsB.forEach(b => {
+      if (!mapAncB.has(b.person.id) || mapAncB.get(b.person.id).generation > b.generation) {
+        mapAncB.set(b.person.id, b);
+      }
+    });
+
+    const cousinAncestors = [];
+    ancestorsA.forEach(a => {
+      if (mapAncB.has(a.person.id)) {
+        const b = mapAncB.get(a.person.id);
+        const d1 = a.generation;
+        const d2 = b.generation;
+        const degree = Math.min(d1, d2) - 1;
+        if (degree >= 1) {
+          const branchA = getBranchChildUnderAncestor(personAId, a.person.id, personsMap);
+          const branchB = getBranchChildUnderAncestor(personBId, a.person.id, personsMap);
+          // Crucial: true cousins MUST diverge into different children under the common ancestor!
+          if (branchA && branchB && branchA.id !== branchB.id) {
+            cousinAncestors.push({
+              ancestor: a.person,
+              d1,
+              d2,
+              degree,
+              removed: Math.abs(d1 - d2),
+              lineageA: a.lineageType,
+              lineageB: b.lineageType,
+              branchA,
+              branchB
+            });
+          }
+        }
+      }
+    });
+
+    if (cousinAncestors.length > 0) {
+      // Sort by minimum generation sum to evaluate closest common ancestors first
+      cousinAncestors.sort((x, y) => (x.d1 + x.d2) - (y.d1 + y.d2));
+      const mrcaInfo = cousinAncestors[0];
+      const mrca = mrcaInfo.ancestor;
+      const { degree, removed, d1, d2, branchA, branchB } = mrcaInfo;
+
+      const { label, subtitle, chineseTerm } = formatSpecificCousinDetails({
+        degree,
+        removed,
+        direction: d1 > d2 ? 'ascending' : (d1 < d2 ? 'descending' : 'none'),
+        descendant: personB,
+        lineageType: mrcaInfo.lineageA,
+        person: personA,
+        branchA,
+        branchB
+      });
+
+      // Compute clean blood lineage path through MRCA!
+      const bloodPath = findBloodLineagePath(personAId, personBId, mrca.id, personsMap, chineseTerm || label);
+
+      if (bloodPath) {
+        candidates.push({
+          title: `${label} — ${subtitle}`,
+          chineseTitle: chineseTerm,
+          degreeType: 'cousin',
+          priority: degree === 1 && removed === 0 ? 6 : (degree === 1 ? 7 : 8),
           degree,
-          removed: Math.abs(d1 - d2),
-          lineageA: a.lineageType,
-          lineageB: b.lineageType
+          removed,
+          notes: `Common ancestors: ${cousinAncestors.map(c => formatFullName(c.ancestor)).join(', ')}`,
+          mrca,
+          path: bloodPath
         });
       }
     }
-  });
-
-  if (cousinAncestors.length > 0) {
-    // Sort by minimum generation sum to evaluate closest common ancestors first
-    cousinAncestors.sort((x, y) => (x.d1 + x.d2) - (y.d1 + y.d2));
-    const mrcaInfo = cousinAncestors[0];
-    const mrca = mrcaInfo.ancestor;
-    const { degree, removed, d1, d2 } = mrcaInfo;
-    const branchA = getBranchChildUnderAncestor(personAId, mrca.id, personsMap);
-    const branchB = getBranchChildUnderAncestor(personBId, mrca.id, personsMap);
-
-    const { label, subtitle, chineseTerm } = formatSpecificCousinDetails({
-      degree,
-      removed,
-      direction: d1 > d2 ? 'ascending' : (d1 < d2 ? 'descending' : 'none'),
-      descendant: personB,
-      lineageType: mrcaInfo.lineageA,
-      person: personA,
-      branchA,
-      branchB
-    });
-
-    // Compute clean blood lineage path through MRCA!
-    const bloodPath = findBloodLineagePath(personAId, personBId, mrca.id, personsMap, chineseTerm || label);
-
-    candidates.push({
-      title: `${label} — ${subtitle}`,
-      chineseTitle: chineseTerm,
-      degreeType: 'cousin',
-      priority: degree === 1 && removed === 0 ? 6 : (degree === 1 ? 7 : 8),
-      degree,
-      removed,
-      notes: `Common ancestors: ${cousinAncestors.map(c => formatFullName(c.ancestor)).join(', ')}`,
-      mrca,
-      path: bloodPath || findKinshipGraphPath(personAId, personBId, personsMap)
-    });
   }
 
   // 8. Step-Family Relationships (via parent marriages)

@@ -20,7 +20,8 @@ export default function GenealogyExplorer({
   onSelectPerson,
   initialTab = 'ancestors',
   initialTargetBId = null,
-  lang = 'en'
+  lang = 'en',
+  theme = 'win98'
 }) {
   const t = translations[lang] || translations.en;
 
@@ -103,21 +104,33 @@ export default function GenealogyExplorer({
   }, [kinship, selectedRelIndex]);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-950 overflow-hidden">
+    <div className={`flex-1 flex flex-col h-full overflow-hidden ${
+      theme === 'win98' ? 'bg-[#c0c0c0] text-black' : 'bg-slate-950 text-white'
+    }`}>
       
       {/* Top Header & Person Picker */}
-      <div className="p-6 border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md">
+      <div className={`p-4 md:p-6 ${
+        theme === 'win98' 
+          ? 'bg-[#c0c0c0] border-b border-gray-400' 
+          : 'border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md'
+      }`}>
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center space-x-2">
-              <span className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400">
+              <span className={`p-1.5 rounded-lg ${
+                theme === 'win98' ? 'win98-box text-black' : 'bg-indigo-500/20 text-indigo-400'
+              }`}>
                 <Compass className="w-5 h-5" />
               </span>
-              <h1 className="text-2xl font-bold text-white tracking-tight">
+              <h1 className={`text-xl md:text-2xl font-black tracking-tight ${
+                theme === 'win98' ? 'text-black' : 'text-white'
+              }`}>
                 {lang === 'zh' ? '家族亲属与寻祖探亲引擎' : 'Genealogy & Kinship Explorer'}
               </h1>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className={`text-xs mt-1 font-semibold ${
+              theme === 'win98' ? 'text-gray-800' : 'text-slate-400'
+            }`}>
               {lang === 'zh' 
                 ? '精准追溯父系母系祖先、查找全代堂亲表亲（细分叔伯姑舅与侄甥辈）、推算任意两人亲属称谓。'
                 : 'Trace paternal & maternal lineages, discover cousins with Uncle/Aunt vs Niece/Nephew tier clarity, and calculate kinship paths.'}
@@ -125,12 +138,20 @@ export default function GenealogyExplorer({
           </div>
 
           {/* Subject Person Picker */}
-          <div className="flex items-center space-x-3 bg-slate-900 border border-slate-800 p-2 rounded-2xl shadow-inner">
-            <span className="text-xs font-semibold uppercase text-slate-400 pl-2">{t.subject}:</span>
+          <div className={`flex items-center space-x-2 p-1.5 ${
+            theme === 'win98' ? 'win98-box' : 'bg-slate-900 border border-slate-800 rounded-2xl shadow-inner'
+          }`}>
+            <span className={`text-xs font-bold uppercase pl-2 ${
+              theme === 'win98' ? 'text-black' : 'text-slate-400'
+            }`}>{t.subject}:</span>
             <select
               value={subjectId}
               onChange={e => setSubjectId(e.target.value)}
-              className="bg-slate-800 text-white text-sm font-medium rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-indigo-500 transition max-w-xs truncate"
+              className={`text-xs md:text-sm font-bold px-3 py-1.5 focus:outline-none max-w-xs truncate ${
+                theme === 'win98'
+                  ? 'win98-sunken text-black bg-white cursor-pointer'
+                  : 'bg-slate-800 text-white rounded-xl border border-slate-700 focus:border-indigo-500'
+              }`}
             >
               {persons.map(p => (
                 <option key={p.id} value={p.id}>
@@ -142,14 +163,19 @@ export default function GenealogyExplorer({
         </div>
 
         {/* Tab Navigation */}
-        <div className="max-w-6xl mx-auto mt-6 flex space-x-2 border-b border-slate-800">
+        <div className={`max-w-6xl mx-auto mt-5 flex space-x-1.5 ${
+          theme === 'win98' ? 'border-b-2 border-gray-400' : 'border-b border-slate-800'
+        }`}>
           <button
             onClick={() => setActiveTab('ancestors')}
-            className={`flex items-center space-x-2 px-5 py-3 border-b-2 font-medium text-sm transition ${
-              activeTab === 'ancestors'
-                ? 'border-amber-500 text-amber-400 bg-amber-500/10 rounded-t-xl'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
+            className={theme === 'win98'
+              ? `win98-btn px-4 py-1.5 text-xs font-bold flex items-center space-x-1.5 text-black ${activeTab === 'ancestors' ? 'win98-btn-active bg-white' : ''}`
+              : `flex items-center space-x-2 px-5 py-3 border-b-2 font-medium text-sm transition ${
+                  activeTab === 'ancestors'
+                    ? 'border-amber-500 text-amber-400 bg-amber-500/10 rounded-t-xl'
+                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                }`
+            }
           >
             <GitFork className="w-4 h-4 rotate-180" />
             <span>{t.searchAncestors} ({ancestors.length})</span>
@@ -157,11 +183,14 @@ export default function GenealogyExplorer({
 
           <button
             onClick={() => setActiveTab('cousins')}
-            className={`flex items-center space-x-2 px-5 py-3 border-b-2 font-medium text-sm transition ${
-              activeTab === 'cousins'
-                ? 'border-purple-500 text-purple-400 bg-purple-500/10 rounded-t-xl'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
+            className={theme === 'win98'
+              ? `win98-btn px-4 py-1.5 text-xs font-bold flex items-center space-x-1.5 text-black ${activeTab === 'cousins' ? 'win98-btn-active bg-white' : ''}`
+              : `flex items-center space-x-2 px-5 py-3 border-b-2 font-medium text-sm transition ${
+                  activeTab === 'cousins'
+                    ? 'border-purple-500 text-purple-400 bg-purple-500/10 rounded-t-xl'
+                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                }`
+            }
           >
             <Users className="w-4 h-4" />
             <span>{t.searchCousins} ({cousins.length})</span>
@@ -169,11 +198,14 @@ export default function GenealogyExplorer({
 
           <button
             onClick={() => setActiveTab('calculator')}
-            className={`flex items-center space-x-2 px-5 py-3 border-b-2 font-medium text-sm transition ${
-              activeTab === 'calculator'
-                ? 'border-indigo-500 text-indigo-400 bg-indigo-500/10 rounded-t-xl'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
+            className={theme === 'win98'
+              ? `win98-btn px-4 py-1.5 text-xs font-bold flex items-center space-x-1.5 text-black ${activeTab === 'calculator' ? 'win98-btn-active bg-white' : ''}`
+              : `flex items-center space-x-2 px-5 py-3 border-b-2 font-medium text-sm transition ${
+                  activeTab === 'calculator'
+                    ? 'border-indigo-500 text-indigo-400 bg-indigo-500/10 rounded-t-xl'
+                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                }`
+            }
           >
             <Compass className="w-4 h-4" />
             <span>{t.kinshipCalculator}</span>

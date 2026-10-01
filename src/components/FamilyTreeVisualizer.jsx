@@ -18,7 +18,8 @@ export default function FamilyTreeVisualizer({
   onExploreAncestors,
   onExploreCousins,
   onEditPerson,
-  lang = 'en'
+  lang = 'en',
+  theme = 'win98'
 }) {
   const t = translations[lang] || translations.en;
   const containerRef = useRef(null);
@@ -136,18 +137,26 @@ export default function FamilyTreeVisualizer({
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-950 overflow-hidden select-none relative">
+    <div className={`flex-1 flex flex-col h-full overflow-hidden select-none relative ${theme === 'win98' ? 'bg-[#008080] text-black' : 'bg-slate-950 text-white'}`}>
       
       {/* Top Floating Control Bar */}
       <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
         
         {/* Left: Root Person Selector */}
-        <div className="pointer-events-auto flex items-center space-x-2 bg-slate-900/90 backdrop-blur-md px-3 py-2 rounded-2xl border border-slate-800 shadow-xl">
-          <span className="text-xs font-semibold uppercase text-slate-400 pl-1">{t.subject}:</span>
+        <div className={`pointer-events-auto flex items-center space-x-2 px-3 py-2 shadow-xl ${
+          theme === 'win98' ? 'win98-box' : 'bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-800'
+        }`}>
+          <span className={`text-xs font-bold uppercase pl-1 ${theme === 'win98' ? 'text-black' : 'text-slate-400'}`}>
+            {t.subject}:
+          </span>
           <select
             value={rootPerson.id}
             onChange={e => onSetRootPerson(e.target.value)}
-            className="bg-slate-800 text-white text-sm font-medium rounded-xl px-3 py-1.5 border border-slate-700 focus:outline-none focus:border-indigo-500 transition max-w-xs truncate"
+            className={`text-xs md:text-sm font-bold px-3 py-1.5 focus:outline-none max-w-xs truncate ${
+              theme === 'win98' 
+                ? 'win98-sunken text-black bg-white cursor-pointer' 
+                : 'bg-slate-800 text-white rounded-xl border border-slate-700 focus:border-indigo-500'
+            }`}
           >
             {persons.map(p => (
               <option key={p.id} value={p.id}>
@@ -155,48 +164,57 @@ export default function FamilyTreeVisualizer({
               </option>
             ))}
           </select>
-          <span className="text-xs text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-lg border border-indigo-500/20 font-medium">
+          <span className={`text-xs px-2 py-1 font-bold ${
+            theme === 'win98' 
+              ? 'win98-sunken bg-yellow-100 text-black border border-yellow-500' 
+              : 'text-indigo-400 bg-indigo-500/10 rounded-lg border border-indigo-500/20'
+          }`}>
             {lang === 'zh' ? '世系家谱图' : 'Pedigree View'}
           </span>
         </div>
 
         {/* Right: Zoom & Reset Controls */}
-        <div className="pointer-events-auto flex items-center space-x-1.5 bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800 shadow-xl">
+        <div className={`pointer-events-auto flex items-center space-x-1.5 p-1.5 shadow-xl ${
+          theme === 'win98' ? 'win98-box' : 'bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-800'
+        }`}>
           <button
             onClick={handleZoomIn}
             title="Zoom In"
-            className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition"
+            className={theme === 'win98' ? 'win98-btn p-1.5 font-bold' : 'p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition'}
           >
             <ZoomIn className="w-4 h-4" />
           </button>
           <button
             onClick={handleZoomOut}
             title="Zoom Out"
-            className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition"
+            className={theme === 'win98' ? 'win98-btn p-1.5 font-bold' : 'p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition'}
           >
             <ZoomOut className="w-4 h-4" />
           </button>
-          <span className="text-xs font-mono text-slate-400 px-2">
+          <span className={`text-xs font-mono font-bold px-2 py-0.5 ${theme === 'win98' ? 'win98-sunken bg-white text-black' : 'text-slate-400'}`}>
             {Math.round(zoom * 100)}%
           </span>
           <button
             onClick={handleReset}
             title="Reset View"
-            className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition"
+            className={theme === 'win98' ? 'win98-btn p-1.5 font-bold' : 'p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition'}
           >
             <RotateCcw className="w-4 h-4" />
           </button>
 
-          <div className="w-[1px] h-5 bg-slate-800 my-auto mx-0.5" />
+          <div className={`w-[1px] h-5 my-auto mx-0.5 ${theme === 'win98' ? 'bg-gray-400' : 'bg-slate-800'}`} />
 
           <button
             onClick={() => setMagnifyOnHover(prev => !prev)}
             title={lang === 'zh' ? '光标悬停卡片放大 2 倍 (开/关)' : 'Magnify card 2x on hover (Toggle)'}
-            className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition ${
-              magnifyOnHover 
-                ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/50 shadow-sm shadow-indigo-500/20' 
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-transparent'
-            }`}
+            className={theme === 'win98' 
+              ? `win98-btn flex items-center space-x-1.5 px-2.5 py-1 text-xs font-bold ${magnifyOnHover ? 'win98-btn-active bg-[#b0b0b0]' : ''}`
+              : `flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition ${
+                  magnifyOnHover 
+                    ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/50 shadow-sm shadow-indigo-500/20' 
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-transparent'
+                }`
+            }
           >
             <Search className="w-3.5 h-3.5" />
             <span>{lang === 'zh' ? '悬停放大 2x' : '2x Zoom'}</span>
@@ -224,7 +242,11 @@ export default function FamilyTreeVisualizer({
           {/* LEVEL 1: GRANDPARENTS */}
           {grandparents.length > 0 && (
             <div className="flex flex-col items-center space-y-2">
-              <span className="text-[11px] font-bold uppercase tracking-widest text-amber-500/80 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+              <span className={`text-[11px] font-bold uppercase tracking-widest ${
+                theme === 'win98' 
+                  ? 'win98-box px-3 py-0.5 text-black bg-[#c0c0c0]' 
+                  : 'text-amber-500/80 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20'
+              }`}>
                 {lang === 'zh' ? '祖父辈 (祖父母 / 外祖父母)' : 'Grandparents'}
               </span>
               <div className="flex flex-wrap items-center justify-center gap-6">
@@ -239,17 +261,22 @@ export default function FamilyTreeVisualizer({
                     isRoot={false}
                     magnify={magnifyOnHover}
                     lang={lang}
+                    theme={theme}
                   />
                 ))}
               </div>
-              <div className="w-0.5 h-6 bg-slate-700/80" />
+              <div className={`w-0.5 h-6 ${theme === 'win98' ? 'bg-black/60' : 'bg-slate-700/80'}`} />
             </div>
           )}
 
           {/* LEVEL 2: PARENTS */}
           {parents.length > 0 && (
             <div className="flex flex-col items-center space-y-2">
-              <span className="text-[11px] font-bold uppercase tracking-widest text-amber-400/90 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+              <span className={`text-[11px] font-bold uppercase tracking-widest ${
+                theme === 'win98' 
+                  ? 'win98-box px-3 py-0.5 text-black bg-[#c0c0c0]' 
+                  : 'text-amber-400/90 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20'
+              }`}>
                 {lang === 'zh' ? '父母尊长' : 'Parents'}
               </span>
               <div className="flex flex-wrap items-center justify-center gap-8">
@@ -264,21 +291,30 @@ export default function FamilyTreeVisualizer({
                     isRoot={false}
                     magnify={magnifyOnHover}
                     lang={lang}
+                    theme={theme}
                   />
                 ))}
               </div>
-              <div className="w-0.5 h-8 bg-indigo-500/50" />
+              <div className={`w-0.5 h-8 ${theme === 'win98' ? 'bg-black/60' : 'bg-indigo-500/50'}`} />
             </div>
           )}
 
           {/* LEVEL 3: CENTER NODE (FOCUS PERSON & SPOUSE & SIBLINGS) */}
           <div className="flex flex-col items-center space-y-4">
-            <span className="text-[11px] font-black uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-4 py-1 rounded-full border border-indigo-500/30 flex items-center">
-              <Sparkles className="w-3.5 h-3.5 mr-1 text-indigo-400" /> 
+            <span className={`text-[11px] font-black uppercase tracking-widest flex items-center ${
+              theme === 'win98' 
+                ? 'win98-box px-4 py-1 text-black bg-[#d4d0c8]' 
+                : 'text-indigo-400 bg-indigo-500/10 px-4 py-1 rounded-full border border-indigo-500/30'
+            }`}>
+              <Sparkles className={`w-3.5 h-3.5 mr-1 ${theme === 'win98' ? 'text-black' : 'text-indigo-400'}`} /> 
               {lang === 'zh' ? '世系核心 (本位世代)' : 'Focus Generation'}
             </span>
 
-            <div className="flex flex-wrap items-center justify-center gap-6 p-4 rounded-3xl bg-slate-900/50 border border-slate-800/80 shadow-2xl backdrop-blur-sm">
+            <div className={`flex flex-wrap items-center justify-center gap-6 p-4 ${
+              theme === 'win98' 
+                ? 'win98-box bg-[#c0c0c0] shadow-lg' 
+                : 'rounded-3xl bg-slate-900/50 border border-slate-800/80 shadow-2xl backdrop-blur-sm'
+            }`}>
               {/* Siblings */}
               {siblings.slice(0, 2).map(sib => (
                 <PersonNodeCard
@@ -292,6 +328,7 @@ export default function FamilyTreeVisualizer({
                   compact
                   magnify={magnifyOnHover}
                   lang={lang}
+                  theme={theme}
                 />
               ))}
 
@@ -309,6 +346,7 @@ export default function FamilyTreeVisualizer({
                 onEdit={() => onEditPerson && onEditPerson(rootPerson)}
                 magnify={magnifyOnHover}
                 lang={lang}
+                theme={theme}
               />
 
               {/* Spouses & Partners with Remarriage / Plural / Ex-Partner handling */}
@@ -317,7 +355,7 @@ export default function FamilyTreeVisualizer({
                 const isEx = status === 'ex_spouse' || status === 'ex_partner';
                 const isFemale = spouse.gender === 'female';
                 
-                let roleLabel = isFemale ? (lang === 'zh' ? '妻子' : 'Wife') : (lang === 'zh' ? '丈夫' : 'Husband');
+                let roleLabel = lang === 'zh' ? '配偶' : 'Spouse';
                 if (status === 'first_spouse') roleLabel = isFemale ? (lang === 'zh' ? '原配发妻' : 'First Wife') : (lang === 'zh' ? '第一任丈夫' : 'First Husband');
                 else if (status === 'second_spouse') roleLabel = isFemale ? (lang === 'zh' ? '继室/续弦' : 'Second Wife') : (lang === 'zh' ? '第二任丈夫' : 'Second Husband');
                 else if (status === 'third_spouse') roleLabel = isFemale ? (lang === 'zh' ? '第三任妻子' : 'Third Wife') : (lang === 'zh' ? '第三任丈夫' : 'Third Husband');
@@ -346,29 +384,37 @@ export default function FamilyTreeVisualizer({
                       isExPartner={isEx}
                       magnify={magnifyOnHover}
                       lang={lang}
+                      theme={theme}
                     />
                   </div>
                 );
               })}
 
-              {/* Link / Add Spouse button (always available, even when other spouses exist) */}
+              {/* Link / Add Spouse button */}
               <button
                 onClick={() => onAddSpouse(rootPerson.id)}
-                className="px-3.5 py-3 rounded-2xl border border-dashed border-slate-700 hover:border-pink-500/60 hover:bg-pink-500/10 text-slate-400 hover:text-pink-300 text-xs font-medium transition flex items-center space-x-2 shrink-0"
+                className={theme === 'win98'
+                  ? 'win98-btn px-3 py-2 text-xs font-bold flex items-center space-x-1.5 shrink-0 text-black'
+                  : 'px-3.5 py-3 rounded-2xl border border-dashed border-slate-700 hover:border-pink-500/60 hover:bg-pink-500/10 text-slate-400 hover:text-pink-300 text-xs font-medium transition flex items-center space-x-2 shrink-0'
+                }
                 title={lang === 'zh' ? '添加或关联新配偶、续弦再婚或多配偶' : 'Link or add spouse, remarriage, or partner'}
               >
-                <Heart className="w-4 h-4 text-pink-400" />
-                <span>+ {spouses.length > 0 ? (lang === 'zh' ? '再婚/续弦/配偶' : 'Add Spouse / Remarriage') : (lang === 'zh' ? '关联配偶/前配偶' : 'Link Spouse / Partner')}</span>
+                <Heart className="w-4 h-4 text-pink-500" />
+                <span>+ {spouses.length > 0 ? (lang === 'zh' ? '再婚/配偶' : 'Add Spouse') : (lang === 'zh' ? '关联配偶' : 'Link Spouse')}</span>
               </button>
             </div>
 
-            {children.length > 0 && <div className="w-0.5 h-8 bg-emerald-500/50" />}
+            {children.length > 0 && <div className={`w-0.5 h-8 ${theme === 'win98' ? 'bg-black/60' : 'bg-emerald-500/50'}`} />}
           </div>
 
           {/* LEVEL 4: CHILDREN */}
           {children.length > 0 && (
             <div className="flex flex-col items-center space-y-2">
-              <span className="text-[11px] font-bold uppercase tracking-widest text-emerald-400/90 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+              <span className={`text-[11px] font-bold uppercase tracking-widest ${
+                theme === 'win98' 
+                  ? 'win98-box px-3 py-0.5 text-black bg-[#c0c0c0]' 
+                  : 'text-emerald-400/90 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20'
+              }`}>
                 {lang === 'zh' ? '子女后代' : 'Children'} ({children.length})
               </span>
               <div className="flex flex-wrap items-center justify-center gap-6">
@@ -383,18 +429,23 @@ export default function FamilyTreeVisualizer({
                     isRoot={false}
                     magnify={magnifyOnHover}
                     lang={lang}
+                    theme={theme}
                   />
                 ))}
               </div>
 
-              {grandchildren.length > 0 && <div className="w-0.5 h-8 bg-teal-500/50" />}
+              {grandchildren.length > 0 && <div className={`w-0.5 h-8 ${theme === 'win98' ? 'bg-black/60' : 'bg-teal-500/50'}`} />}
             </div>
           )}
 
           {/* LEVEL 5: GRANDCHILDREN */}
           {grandchildren.length > 0 && (
             <div className="flex flex-col items-center space-y-2">
-              <span className="text-[11px] font-bold uppercase tracking-widest text-teal-400/90 bg-teal-500/10 px-3 py-1 rounded-full border border-teal-500/20">
+              <span className={`text-[11px] font-bold uppercase tracking-widest ${
+                theme === 'win98' 
+                  ? 'win98-box px-3 py-0.5 text-black bg-[#c0c0c0]' 
+                  : 'text-teal-400/90 bg-teal-500/10 px-3 py-1 rounded-full border border-teal-500/20'
+              }`}>
                 {lang === 'zh' ? '孙辈后代' : 'Grandchildren'} ({grandchildren.length})
               </span>
               <div className="flex flex-wrap items-center justify-center gap-6">
@@ -409,6 +460,7 @@ export default function FamilyTreeVisualizer({
                     isRoot={false}
                     magnify={magnifyOnHover}
                     lang={lang}
+                    theme={theme}
                   />
                 ))}
               </div>
@@ -435,9 +487,162 @@ function PersonNodeCard({
   onExploreCousins,
   onEdit,
   magnify = true,
-  lang = 'en'
+  lang = 'en',
+  theme = 'win98'
 }) {
   const isFemale = person.gender === 'female';
+
+  if (theme === 'win98') {
+    const titleClass = isRoot 
+      ? 'win98-title-gold' 
+      : isExPartner 
+      ? 'win98-title-gray' 
+      : isFemale 
+      ? 'win98-title-rose' 
+      : 'win98-title-navy';
+
+    return (
+      <div
+        onClick={onSelect}
+        className={`group relative win98-box cursor-pointer select-none transition-transform duration-200 origin-center ${
+          magnify 
+            ? 'hover:scale-[1.85] hover:z-50 hover:shadow-2xl' 
+            : 'hover:scale-[1.03]'
+        } ${
+          isRoot 
+            ? 'ring-2 ring-blue-800 shadow-2xl z-10 w-72' 
+            : `${compact ? 'w-56' : 'w-64'}`
+        }`}
+      >
+        {/* Win98 Window Title Bar */}
+        <div className={`px-2 py-0.5 flex items-center justify-between text-xs font-bold text-white select-none ${titleClass}`}>
+          <div className="flex items-center space-x-1.5 truncate">
+            <span className="text-[11px]">{isRoot ? '👑' : (isFemale ? '♀' : '♂')}</span>
+            <span className="truncate">{role}</span>
+          </div>
+          <div className="flex items-center space-x-0.5 shrink-0" onClick={e => e.stopPropagation()}>
+            <span className="win98-icon-btn">_</span>
+            <span className="win98-icon-btn">✕</span>
+          </div>
+        </div>
+
+        {/* Win98 Sunken White Panel for Maximum Legibility */}
+        <div className="m-1 win98-sunken p-2.5 bg-white text-black flex items-start space-x-3">
+          {person.avatar ? (
+            <img
+              src={person.avatar}
+              alt={formatFullName(person, lang)}
+              className="w-12 h-12 rounded object-cover border border-gray-400 shrink-0"
+            />
+          ) : (
+            <div className="w-12 h-12 bg-[#dfdfdf] border border-gray-400 rounded flex items-center justify-center text-gray-700 shrink-0 font-bold text-lg">
+              {person.gender === 'female' ? '♀' : '♂'}
+            </div>
+          )}
+
+          <div className="flex-1 min-w-0">
+            <h3 className="font-black text-black text-sm md:text-base leading-snug truncate">
+              {formatFullName(person, lang)}
+            </h3>
+
+            {person.chineseName && (
+              <div className="text-xs font-bold text-[#000080] truncate mt-0.5">
+                {person.chineseName}
+              </div>
+            )}
+
+            <p className="text-xs font-bold text-neutral-800 mt-1">
+              {getLifespan(person, lang)}
+            </p>
+
+            <div className="mt-1 flex items-center space-x-1">
+              {person.isLiving ? (
+                <span className="text-[10px] font-extrabold px-1.5 py-0.2 bg-emerald-100 text-emerald-900 border border-emerald-400 rounded">
+                  {lang === 'zh' ? '在世' : 'Living'}
+                </span>
+              ) : (
+                <span className="text-[10px] font-extrabold px-1.5 py-0.2 bg-neutral-200 text-neutral-800 border border-neutral-400 rounded">
+                  {lang === 'zh' ? '已故' : 'Deceased'}
+                </span>
+              )}
+              {person.occupation && (
+                <span className="text-[10px] text-neutral-600 truncate">
+                  • {person.occupation}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Win98 Action Buttons */}
+        {isRoot ? (
+          <div className="p-1 pt-0 flex flex-wrap gap-1" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={onExploreAncestors}
+              className="win98-btn flex-1 text-xs font-bold py-1 px-1.5 flex items-center justify-center text-black"
+            >
+              <GitFork className="w-3 h-3 mr-1 rotate-180" /> {lang === 'zh' ? '祖先' : 'Ancestors'}
+            </button>
+            <button
+              onClick={onExploreCousins}
+              className="win98-btn flex-1 text-xs font-bold py-1 px-1.5 flex items-center justify-center text-black"
+            >
+              <Users className="w-3 h-3 mr-1" /> {lang === 'zh' ? '堂表亲' : 'Cousins'}
+            </button>
+            {onAddSpouse && (
+              <button
+                onClick={onAddSpouse}
+                className="win98-btn text-xs font-bold py-1 px-1.5 flex items-center justify-center text-black"
+                title={lang === 'zh' ? '添加或关联配偶' : 'Add or Link Spouse'}
+              >
+                <Heart className="w-3 h-3 mr-0.5 text-rose-600" /> {lang === 'zh' ? '配偶' : 'Spouse'}
+              </button>
+            )}
+            {onAddChild && (
+              <button
+                onClick={onAddChild}
+                className="win98-btn text-xs font-bold py-1 px-1.5 flex items-center justify-center text-black"
+              >
+                <Plus className="w-3 h-3 mr-0.5" /> {lang === 'zh' ? '子女' : 'Child'}
+              </button>
+            )}
+            {onEdit && (
+              <button
+                onClick={onEdit}
+                className="win98-btn text-xs font-bold py-1 px-1.5 flex items-center justify-center text-black"
+                title={lang === 'zh' ? '编辑族人' : 'Edit Member'}
+              >
+                <Edit className="w-3 h-3 mr-0.5" /> {lang === 'zh' ? '编辑' : 'Edit'}
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="p-1 pt-0 flex items-center justify-between text-xs" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={onSetRoot}
+              className="win98-btn text-xs font-bold py-0.5 px-2 flex items-center text-black"
+            >
+              <Eye className="w-3 h-3 mr-1" /> {lang === 'zh' ? '定为中心' : 'Focus'}
+            </button>
+            <div className="flex items-center space-x-1">
+              {onEdit && (
+                <button
+                  onClick={onEdit}
+                  className="win98-btn text-xs font-bold py-0.5 px-1.5 flex items-center text-black"
+                  title={lang === 'zh' ? '编辑族人' : 'Edit Member'}
+                >
+                  <Edit className="w-3 h-3 mr-1" /> {lang === 'zh' ? '编辑' : 'Edit'}
+                </button>
+              )}
+              <span className="text-[10px] text-gray-700 font-bold">{lang === 'zh' ? '详情' : 'Info'}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Modern Theme Card rendering (preserved for modern theme toggle)
   const genderBorder = isExPartner 
     ? 'border-dashed border-rose-500/40 hover:border-rose-400'
     : isFemale 

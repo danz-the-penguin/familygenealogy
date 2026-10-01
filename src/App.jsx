@@ -50,6 +50,48 @@ export default function App() {
   // Language State: 'en' | 'zh'
   const [lang, setLang] = useState('en');
 
+  // Theme state: 'win98' | 'modern' (Default to 'win98' for senior-friendly retro grey UI)
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem('family_theme') || 'win98';
+    } catch {
+      return 'win98';
+    }
+  });
+
+  const toggleTheme = useCallback(() => {
+    setTheme(prev => {
+      const next = prev === 'win98' ? 'modern' : 'win98';
+      try {
+        localStorage.setItem('family_theme', next);
+      } catch {}
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (theme === 'win98') {
+      document.body.classList.add('theme-win98');
+    } else {
+      document.body.classList.remove('theme-win98');
+    }
+  }, [theme]);
+
+  // Windows 98 Taskbar & Start Menu state
+  const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(() => {
+    const d = new Date();
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const d = new Date();
+      setCurrentTime(d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    }, 10000);
+    return () => clearInterval(timer);
+  }, []);
+
   // Selected Person Drawer
   const [selectedPersonId, setSelectedPersonId] = useState(() => {
     try {
@@ -250,7 +292,7 @@ export default function App() {
     (cleanPerson.spouses || []).forEach((sId, index) => {
       if (!cleanPerson.partnerDetails[sId]) {
         cleanPerson.partnerDetails[sId] = {
-          status: index === 0 ? 'first_spouse' : (index === 1 ? 'second_spouse' : 'third_spouse'),
+          status: 'spouse',
           marriageState: 'current',
           notes: ''
         };
@@ -317,8 +359,7 @@ export default function App() {
         if (!updatedP.partnerDetails) updatedP.partnerDetails = {};
         const partnerDetailForP = cleanPerson.partnerDetails?.[p.id] || {};
         if (!updatedP.partnerDetails[cleanPerson.id] || !updatedP.partnerDetails[cleanPerson.id].status) {
-          const otherSpouses = (updatedP.spouses || []).filter(id => id !== cleanPerson.id);
-          const defaultRole = otherSpouses.length === 0 ? 'first_spouse' : 'second_spouse';
+          const defaultRole = 'spouse';
           const isPersonDeceased = !cleanPerson.isLiving;
           updatedP.partnerDetails[cleanPerson.id] = {
             ...(updatedP.partnerDetails[cleanPerson.id] || {}),
@@ -717,7 +758,11 @@ export default function App() {
   ]);
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 font-sans">
+    <div className={`flex flex-col h-screen w-screen overflow-hidden font-sans ${
+      theme === 'win98' 
+        ? 'bg-[#008080] text-black theme-win98 select-none' 
+        : 'bg-slate-950 text-slate-100'
+    }`}>
       
       {/* Navigation Bar */}
       <Navbar
@@ -743,6 +788,8 @@ export default function App() {
         isAdminMode={isAdminMode}
         onOpenAdminLogin={() => setIsAdminLoginModalOpen(true)}
         onAdminLogout={handleAdminLogout}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       {/* Main View Display */}
@@ -765,6 +812,7 @@ export default function App() {
               setIsPersonModalOpen(true);
             } : undefined}
             lang={lang}
+            theme={theme}
           />
         )}
 
@@ -869,9 +917,230 @@ export default function App() {
             onAddSpouse={isAdminMode ? handleAddSpouseTo : undefined}
             onAddChild={isAdminMode ? handleAddChildTo : undefined}
             lang={lang}
+            theme={theme}
           />
         )}
       </main>
+
+      {/* Windows 98 Taskbar & Start Menu */}
+      {theme === 'win98' && (
+        <footer className="h-9 bg-[#c0c0c0] border-t-2 border-white flex items-center justify-between px-1.5 py-1 z-50 shrink-0 select-none shadow-[0_-2px_4px_rgba(0,0,0,0.15)] relative">
+          
+          {/* Start Menu Dropdown */}
+          {isStartMenuOpen && (
+            <div 
+              className="absolute bottom-10 left-1 w-64 win98-box z-[100] shadow-2xl flex flex-row overflow-hidden animate-in slide-in-from-bottom-2 duration-150"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Vertical Windows 98 Banner on Left */}
+              <div className="w-8 win98-title-navy flex flex-col justify-end items-center pb-4 text-white font-bold tracking-wider select-none shrink-0">
+                <span className="transform -rotate-90 origin-center text-xs font-black whitespace-nowrap tracking-widest">
+                  WINDOWS 98
+                </span>
+              </div>
+
+              {/* Start Menu Items */}
+              <div className="flex-1 py-1 bg-[#c0c0c0] text-black text-xs font-semibold">
+                <div 
+                  onClick={() => { setCurrentView('tree'); setIsStartMenuOpen(false); }}
+                  className="px-3 py-1.5 hover:bg-[#000080] hover:text-white flex items-center space-x-2.5 cursor-pointer"
+                >
+                  <span className="text-base">🌳</span>
+                  <span>{lang === 'zh' ? '世系家谱树' : 'Family Tree'}</span>
+                </div>
+                <div 
+                  onClick={() => { setCurrentView('explorer'); setIsStartMenuOpen(false); }}
+                  className="px-3 py-1.5 hover:bg-[#000080] hover:text-white flex items-center space-x-2.5 cursor-pointer"
+                >
+                  <span className="text-base">🧭</span>
+                  <span>{lang === 'zh' ? '亲属称谓探查器' : 'Kinship Explorer'}</span>
+                </div>
+                <div 
+                  onClick={() => { setCurrentView('directory'); setIsStartMenuOpen(false); }}
+                  className="px-3 py-1.5 hover:bg-[#000080] hover:text-white flex items-center space-x-2.5 cursor-pointer"
+                >
+                  <span className="text-base">👥</span>
+                  <span>{lang === 'zh' ? '族人名录大全' : 'People Directory'}</span>
+                </div>
+                <div 
+                  onClick={() => { setCurrentView('timeline'); setIsStartMenuOpen(false); }}
+                  className="px-3 py-1.5 hover:bg-[#000080] hover:text-white flex items-center space-x-2.5 cursor-pointer"
+                >
+                  <span className="text-base">📅</span>
+                  <span>{lang === 'zh' ? '岁月大事年表' : 'Historical Timeline'}</span>
+                </div>
+                <div 
+                  onClick={() => { setCurrentView('stats'); setIsStartMenuOpen(false); }}
+                  className="px-3 py-1.5 hover:bg-[#000080] hover:text-white flex items-center space-x-2.5 cursor-pointer"
+                >
+                  <span className="text-base">📊</span>
+                  <span>{lang === 'zh' ? '家族统计分析' : 'Family Statistics'}</span>
+                </div>
+                <div 
+                  onClick={() => { setCurrentView('gallery'); setIsStartMenuOpen(false); }}
+                  className="px-3 py-1.5 hover:bg-[#000080] hover:text-white flex items-center space-x-2.5 cursor-pointer"
+                >
+                  <span className="text-base">🖼️</span>
+                  <span>{lang === 'zh' ? '光影相册合集' : 'Photo Gallery'}</span>
+                </div>
+                <div className="h-[1px] bg-gray-400 my-1 mx-2" />
+                {isAdminMode && (
+                  <div 
+                    onClick={() => {
+                      setEditingPerson(null);
+                      setDefaultParentId(null);
+                      setDefaultSpouseId(null);
+                      setIsPersonModalOpen(true);
+                      setIsStartMenuOpen(false);
+                    }}
+                    className="px-3 py-1.5 hover:bg-[#000080] hover:text-white flex items-center space-x-2.5 cursor-pointer"
+                  >
+                    <span className="text-base">➕</span>
+                    <span>{lang === 'zh' ? '新增族人资料...' : 'Add New Person...'}</span>
+                  </div>
+                )}
+                <div 
+                  onClick={() => { setIsFileEditorOpen(true); setIsStartMenuOpen(false); }}
+                  className="px-3 py-1.5 hover:bg-[#000080] hover:text-white flex items-center space-x-2.5 cursor-pointer"
+                >
+                  <span className="text-base">💾</span>
+                  <span>{lang === 'zh' ? '数据中心与同步...' : 'Database Sync...'}</span>
+                </div>
+                <div 
+                  onClick={() => { setIsShortcutsModalOpen(true); setIsStartMenuOpen(false); }}
+                  className="px-3 py-1.5 hover:bg-[#000080] hover:text-white flex items-center space-x-2.5 cursor-pointer"
+                >
+                  <span className="text-base">⌨️</span>
+                  <span>{lang === 'zh' ? '键盘快捷键指南' : 'Keyboard Shortcuts'}</span>
+                </div>
+                <div className="h-[1px] bg-gray-400 my-1 mx-2" />
+                <div 
+                  onClick={() => { toggleTheme(); setIsStartMenuOpen(false); }}
+                  className="px-3 py-1.5 hover:bg-[#000080] hover:text-white flex items-center space-x-2.5 cursor-pointer font-bold"
+                >
+                  <span className="text-base">🌙</span>
+                  <span>{lang === 'zh' ? '切换为现代黑夜模式' : 'Switch to Modern Dark'}</span>
+                </div>
+                <div 
+                  onClick={() => { 
+                    if (isAdminMode) {
+                      handleAdminLogout();
+                    } else {
+                      setIsAdminLoginModalOpen(true);
+                    }
+                    setIsStartMenuOpen(false); 
+                  }}
+                  className="px-3 py-1.5 hover:bg-[#000080] hover:text-white flex items-center space-x-2.5 cursor-pointer"
+                >
+                  <span className="text-base">{isAdminMode ? '🔒' : '🔑'}</span>
+                  <span>{isAdminMode ? (lang === 'zh' ? '退出管理模式' : 'Exit Admin') : (lang === 'zh' ? '管理员登录验证...' : 'Admin Login...')}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Left: Start Button + Task Tabs */}
+          <div className="flex items-center space-x-1.5 overflow-x-auto">
+            {/* Start Button */}
+            <button
+              onClick={() => setIsStartMenuOpen(prev => !prev)}
+              className={`win98-btn flex items-center space-x-1.5 px-2.5 py-0.5 font-black text-xs tracking-wide shrink-0 ${
+                isStartMenuOpen ? 'win98-btn-active' : ''
+              }`}
+            >
+              <span className="text-sm leading-none">🏁</span>
+              <span className="font-extrabold">{lang === 'zh' ? '开始' : 'Start'}</span>
+            </button>
+
+            <div className="w-[2px] h-5 border-l border-gray-400 border-r border-white mx-0.5" />
+
+            {/* Task Tabs for current views */}
+            <button
+              onClick={() => setCurrentView('tree')}
+              className={`win98-btn px-2 py-0.5 text-xs font-bold flex items-center space-x-1 shrink-0 ${
+                currentView === 'tree' ? 'win98-btn-active bg-[#d4d0c8]' : ''
+              }`}
+            >
+              <span>🌳</span>
+              <span>{lang === 'zh' ? '世系家谱树' : 'Tree'}</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentView('explorer')}
+              className={`win98-btn px-2 py-0.5 text-xs font-bold flex items-center space-x-1 shrink-0 ${
+                currentView === 'explorer' ? 'win98-btn-active bg-[#d4d0c8]' : ''
+              }`}
+            >
+              <span>🧭</span>
+              <span>{lang === 'zh' ? '亲属探查' : 'Kinship'}</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentView('directory')}
+              className={`win98-btn px-2 py-0.5 text-xs font-bold flex items-center space-x-1 shrink-0 ${
+                currentView === 'directory' ? 'win98-btn-active bg-[#d4d0c8]' : ''
+              }`}
+            >
+              <span>👥</span>
+              <span>{lang === 'zh' ? '族人名录' : 'Directory'}</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentView('timeline')}
+              className={`win98-btn px-2 py-0.5 text-xs font-bold flex items-center space-x-1 shrink-0 ${
+                currentView === 'timeline' ? 'win98-btn-active bg-[#d4d0c8]' : ''
+              }`}
+            >
+              <span>📅</span>
+              <span>{lang === 'zh' ? '大事年表' : 'Timeline'}</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentView('stats')}
+              className={`win98-btn px-2 py-0.5 text-xs font-bold flex items-center space-x-1 shrink-0 ${
+                currentView === 'stats' ? 'win98-btn-active bg-[#d4d0c8]' : ''
+              }`}
+            >
+              <span>📊</span>
+              <span>{lang === 'zh' ? '统计分析' : 'Stats'}</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentView('gallery')}
+              className={`win98-btn px-2 py-0.5 text-xs font-bold flex items-center space-x-1 shrink-0 ${
+                currentView === 'gallery' ? 'win98-btn-active bg-[#d4d0c8]' : ''
+              }`}
+            >
+              <span>🖼️</span>
+              <span>{lang === 'zh' ? '光影相册' : 'Gallery'}</span>
+            </button>
+          </div>
+
+          {/* Right: System Tray */}
+          <div className="win98-sunken px-2 py-0.5 flex items-center space-x-2 shrink-0 bg-[#c0c0c0] text-black text-xs font-bold">
+            <button 
+              onClick={handleToggleLang}
+              className="px-1 hover:bg-white rounded cursor-pointer"
+              title={lang === 'zh' ? '切换语言 (EN)' : 'Toggle Language (中文)'}
+            >
+              {lang === 'zh' ? '中' : 'EN'}
+            </button>
+
+            <button
+              onClick={toggleTheme}
+              className="px-1 hover:bg-white rounded cursor-pointer"
+              title={lang === 'zh' ? '切换为现代黑夜模式' : 'Switch to Modern Dark'}
+            >
+              🖥️
+            </button>
+
+            <span className="font-mono text-[11px]">
+              {currentTime}
+            </span>
+          </div>
+
+        </footer>
+      )}
 
       {/* Add / Edit Person Modal */}
       <PersonModal
@@ -893,6 +1162,7 @@ export default function App() {
         defaultSpouseId={defaultSpouseId}
         photos={data.photos || []}
         lang={lang}
+        theme={theme}
       />
 
       {/* File Editor & Database Sync Modal */}

@@ -42,6 +42,13 @@
     linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
 }
 
+.theme-win98 .genealogy-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+}
+
 /* Node pulse animations */
 @keyframes highlight-pulse {
   0%, 100% {
@@ -54,4 +61,165 @@
 
 .highlight-node {
   animation: highlight-pulse 2s infinite ease-in-out;
+}
+
+/* =========================================================
+   WINDOWS 98 RETRO 3D DESIGN SYSTEM (HIGH READABILITY & RETRO GREY)
+   ========================================================= */
+
+body.theme-win98 {
+  background-color: #008080 !important;
+  color: #000000 !important;
+  font-family: "Segoe UI", Tahoma, "MS Sans Serif", "Microsoft YaHei", sans-serif !important;
+}
+
+.theme-win98 {
+  --win-gray: #c0c0c0;
+  --win-dark: #808080;
+  --win-black: #000000;
+  --win-white: #ffffff;
+}
+
+/* 3D Raised Box (Dialog, Window, Ribbon) */
+.win98-box {
+  background-color: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #808080;
+  border-bottom: 2px solid #808080;
+  box-shadow: inset 1px 1px 0px #ffffff, 1px 1px 0px #000000;
+  color: #000000;
+}
+
+/* 3D Sunken Inset (Well, Canvas, Content Panel, Input) */
+.win98-sunken {
+  background-color: #ffffff;
+  border-top: 2px solid #808080;
+  border-left: 2px solid #808080;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  box-shadow: inset 1px 1px 0px #000000;
+  color: #000000;
+}
+
+/* 3D Raised Button */
+.win98-btn {
+  background-color: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #808080;
+  border-bottom: 2px solid #808080;
+  box-shadow: inset 1px 1px 0px #ffffff, 1px 1px 0px #000000;
+  color: #000000;
+  cursor: pointer;
+  user-select: none;
+}
+.win98-btn:hover {
+  background-color: #d4d0c8;
+}
+.win98-btn:active, .win98-btn-active {
+  border-top: 2px solid #808080 !important;
+  border-left: 2px solid #808080 !important;
+  border-right: 2px solid #ffffff !important;
+  border-bottom: 2px solid #ffffff !important;
+  box-shadow: inset 1px 1px 0px #000000 !important;
+  background-color: #b0b0b0 !important;
+}
+
+/* Win98 Title Bars */
+.win98-title-navy {
+  background: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+  color: #ffffff;
+}
+.win98-title-rose {
+  background: linear-gradient(90deg, #800040 0%, #c03070 100%);
+  color: #ffffff;
+}
+.win98-title-gold {
+  background: linear-gradient(90deg, #804000 0%, #d08010 100%);
+  color: #ffffff;
+}
+.win98-title-gray {
+  background: linear-gradient(90deg, #808080 0%, #b5b5b5 100%);
+  color: #ffffff;
+}
+
+/* Win98 3D Title bar small icon button */
+.win98-icon-btn {
+  background-color: #c0c0c0;
+  border-top: 1.5px solid #ffffff;
+  border-left: 1.5px solid #ffffff;
+  border-right: 1.5px solid #808080;
+  border-bottom: 1.5px solid #808080;
+  box-shadow: 1px 1px 0px #000000;
+  color: #000000;
+  width: 16px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 1;
+}
+.win98-icon-btn:active {
+  border-top: 1.5px solid #808080;
+  border-left: 1.5px solid #808080;
+  border-right: 1.5px solid #ffffff;
+  border-bottom: 1.5px solid #ffffff;
+  box-shadow: none;
+}
+
+/* Win98 High-Contrast Senior Typography & Form Elements */
+.theme-win98 input:not([type="checkbox"]):not([type="radio"]),
+.theme-win98 select,
+.theme-win98 textarea {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-top: 2px solid #808080 !important;
+  border-left: 2px solid #808080 !important;
+  border-right: 2px solid #ffffff !important;
+  border-bottom: 2px solid #ffffff !important;
+  box-shadow: inset 1px 1px 0px #000000 !important;
+  font-weight: 600 !important;
+}
+
+.theme-win98 input::placeholder,
+.theme-win98 textarea::placeholder {
+  color: #666666 !important;
+  font-weight: 500 !important;
+}
+
+/* Win98 Classic Selection Highlight */
+.theme-win98 ::selection {
+  background-color: #000080 !important;
+  color: #ffffff !important;
+}
+
+/* Win98 Classic 3D Scrollbars */
+.theme-win98 ::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+.theme-win98 ::-webkit-scrollbar-track {
+  background-color: #dfdfdf;
+  border: 1px solid #808080;
+}
+.theme-win98 ::-webkit-scrollbar-thumb {
+  background-color: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #808080;
+  border-bottom: 2px solid #808080;
+  box-shadow: 1px 1px 0px #000000;
+}
+.theme-win98 ::-webkit-scrollbar-thumb:hover {
+  background-color: #d4d0c8;
+}
+.theme-win98 ::-webkit-scrollbar-thumb:active {
+  background-color: #b0b0b0;
+  border-top: 2px solid #808080;
+  border-left: 2px solid #808080;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
 }

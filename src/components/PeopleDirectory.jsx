@@ -14,7 +14,8 @@ export default function PeopleDirectory({
   onExploreCousins,
   onAddNewPerson,
   onEditPerson,
-  lang = 'en'
+  lang = 'en',
+  theme = 'win98'
 }) {
   const t = translations[lang] || translations.en;
 
@@ -90,6 +91,100 @@ export default function PeopleDirectory({
   // Render single person card
   const renderPersonCard = (person) => {
     const isFemale = person.gender === 'female';
+
+    if (theme === 'win98') {
+      const titleClass = isFemale ? 'win98-title-rose' : 'win98-title-navy';
+      return (
+        <div
+          key={person.id}
+          onClick={() => onSelectPerson(person)}
+          className="win98-box cursor-pointer select-none p-1 transition-transform hover:scale-[1.02] flex flex-col justify-between"
+        >
+          <div>
+            {/* Title bar */}
+            <div className={`px-2 py-0.5 flex items-center justify-between text-xs font-bold text-white ${titleClass}`}>
+              <span className="truncate">{person.gender === 'female' ? '♀ 女' : '♂ 男'} • {formatFullName(person, lang)}</span>
+              <div className="flex items-center space-x-0.5" onClick={e => e.stopPropagation()}>
+                <span className="win98-icon-btn">_</span>
+                <span className="win98-icon-btn">✕</span>
+              </div>
+            </div>
+
+            {/* Inset content */}
+            <div className="m-1 win98-sunken p-2.5 bg-white text-black flex items-start space-x-3">
+              {person.avatar ? (
+                <img
+                  src={person.avatar}
+                  alt={formatFullName(person, lang)}
+                  className="w-12 h-12 rounded object-cover border border-gray-400 shrink-0"
+                />
+              ) : (
+                <div className="w-12 h-12 bg-[#dfdfdf] border border-gray-400 rounded flex items-center justify-center text-gray-700 font-bold text-base shrink-0">
+                  {person.gender === 'female' ? '♀' : '♂'}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-extrabold text-black text-sm md:text-base leading-snug truncate">
+                  {formatFullName(person, lang)}
+                </h3>
+                {person.chineseName && (
+                  <div className="text-xs font-bold text-[#000080] truncate">
+                    {person.chineseName}
+                  </div>
+                )}
+                <p className="text-xs font-bold text-gray-800 mt-1">
+                  {getLifespan(person, lang)}
+                </p>
+                <div className="mt-1 flex items-center space-x-1">
+                  {person.isLiving ? (
+                    <span className="text-[10px] font-extrabold px-1.5 py-0.2 bg-emerald-100 text-emerald-900 border border-emerald-400 rounded">
+                      {lang === 'zh' ? '在世' : 'Living'}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-extrabold px-1.5 py-0.2 bg-neutral-200 text-neutral-800 border border-neutral-400 rounded">
+                      {lang === 'zh' ? '已故' : 'Deceased'}
+                    </span>
+                  )}
+                  {person.occupation && (
+                    <span className="text-[10px] text-gray-600 truncate">
+                      • {person.occupation}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Buttons */}
+          <div className="p-1 pt-0 flex items-center justify-between gap-1 text-xs" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => onSetRootPerson(person.id)}
+              className="win98-btn flex-1 py-1 px-1.5 text-xs font-bold flex items-center justify-center text-black"
+            >
+              <Eye className="w-3 h-3 mr-1 text-blue-900" />
+              <span>{lang === 'zh' ? '世系树' : 'Tree'}</span>
+            </button>
+            <button
+              onClick={() => onExploreAncestors(person.id)}
+              className="win98-btn flex-1 py-1 px-1.5 text-xs font-bold flex items-center justify-center text-black"
+            >
+              <GitFork className="w-3 h-3 mr-1 rotate-180" />
+              <span>{lang === 'zh' ? '祖先' : 'Ancestors'}</span>
+            </button>
+            {onEditPerson && (
+              <button
+                onClick={() => onEditPerson(person)}
+                className="win98-btn py-1 px-2 text-xs font-bold flex items-center text-black"
+              >
+                <Edit className="w-3 h-3 mr-1" />
+                <span>{lang === 'zh' ? '编辑' : 'Edit'}</span>
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     const genderBadge = isFemale 
       ? 'bg-pink-500/10 text-pink-300 border-pink-500/20' 
       : 'bg-blue-500/10 text-blue-300 border-blue-500/20';
@@ -222,15 +317,21 @@ export default function PeopleDirectory({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-950 overflow-hidden">
+    <div className={`flex-1 flex flex-col h-full overflow-hidden ${
+      theme === 'win98' ? 'bg-[#c0c0c0] text-black font-semibold' : 'bg-slate-950 text-white'
+    }`}>
       
       {/* Top Search & Filter Bar */}
-      <div className="p-6 border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md">
+      <div className={`p-4 md:p-6 ${
+        theme === 'win98' ? 'bg-[#c0c0c0] border-b border-gray-400' : 'border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md'
+      }`}>
         <div className="max-w-6xl mx-auto space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight flex items-center">
-                <Users className="w-6 h-6 mr-2 text-indigo-400" />
+              <h1 className={`text-xl md:text-2xl font-black tracking-tight flex items-center ${
+                theme === 'win98' ? 'text-black' : 'text-white'
+              }`}>
+                <Users className={`w-6 h-6 mr-2 ${theme === 'win98' ? 'text-blue-900' : 'text-indigo-400'}`} />
                 {lang === 'zh' ? '族人名录总表' : 'Family Directory'} ({filtered.length} / {persons.length})
               </h1>
               <p className="text-xs text-slate-400 mt-0.5">

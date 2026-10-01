@@ -22,7 +22,9 @@ export default function Navbar({
   onToggleLang,
   isAdminMode = false,
   onOpenAdminLogin,
-  onAdminLogout
+  onAdminLogout,
+  theme = 'win98',
+  onToggleTheme
 }) {
   const t = translations[lang] || translations.en;
   const [searchQuery, setSearchQuery] = useState('');
@@ -34,10 +36,254 @@ export default function Navbar({
 
   const searchResults = searchQuery.trim() 
     ? persons.filter(p => {
-        const full = `${p.firstName} ${p.lastName} ${p.maidenName || ''} ${p.chineseName || ''}`.toLowerCase();
-        return full.includes(searchQuery.toLowerCase());
+        const formatted = formatFullName(p, lang).toLowerCase();
+        const full = `${p.firstName || ''} ${p.lastName || ''} ${p.maidenName || ''} ${p.chineseName || ''} ${p.christianName || ''} ${p.patronymic || ''}`.toLowerCase();
+        const q = searchQuery.trim().toLowerCase();
+        return formatted.includes(q) || full.includes(q) || q.includes(formatted);
       }).slice(0, 6)
     : [];
+
+  if (theme === 'win98') {
+    return (
+      <header className="win98-box z-30 shrink-0 select-none border-b-2 border-gray-400">
+        {/* Win98 Top Window Titlebar */}
+        <div className="win98-title-navy px-2 py-0.5 flex items-center justify-between text-xs font-bold text-white">
+          <div className="flex items-center space-x-2">
+            <span className="text-sm">🌳</span>
+            <span className="tracking-wide">
+              {lang === 'zh' ? '家族世系谱牒系统 1998' : 'Munang Family Genealogy & Kinship System 1998'} — [{persons.length} {lang === 'zh' ? '位族人资料' : 'Members Archive'}]
+            </span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <span className="win98-icon-btn">_</span>
+            <span className="win98-icon-btn">🗖</span>
+            <span className="win98-icon-btn">✕</span>
+          </div>
+        </div>
+
+        {/* Win98 Classic Menu Bar */}
+        <div className="bg-[#c0c0c0] border-b border-gray-400 px-3 py-0.5 flex items-center space-x-4 text-xs font-bold text-black">
+          <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.2 rounded cursor-pointer" onClick={() => onViewChange('tree')}>
+            <u>F</u>ile
+          </span>
+          <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.2 rounded cursor-pointer" onClick={() => onViewChange('explorer')}>
+            <u>E</u>dit
+          </span>
+          <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.2 rounded cursor-pointer" onClick={() => onViewChange('directory')}>
+            <u>V</u>iew
+          </span>
+          <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.2 rounded cursor-pointer" onClick={onOpenShortcuts}>
+            <u>T</u>ools
+          </span>
+          <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.2 rounded cursor-pointer" onClick={() => onViewChange('tutorial')}>
+            <u>H</u>elp
+          </span>
+        </div>
+
+        {/* Win98 3D Toolbar */}
+        <div className="bg-[#c0c0c0] px-2 py-1 flex flex-wrap items-center justify-between gap-1 text-black">
+          {/* Left View Buttons */}
+          <div className="flex items-center space-x-1 overflow-x-auto">
+            <button
+              onClick={() => onViewChange('tree')}
+              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 ${
+                currentView === 'tree' ? 'win98-btn-active bg-[#d4d0c8]' : ''
+              }`}
+            >
+              <Network className="w-3.5 h-3.5 text-blue-900" />
+              <span>{t.treeView}</span>
+            </button>
+
+            <button
+              onClick={() => onViewChange('explorer')}
+              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 ${
+                currentView === 'explorer' ? 'win98-btn-active bg-[#d4d0c8]' : ''
+              }`}
+            >
+              <GitFork className="w-3.5 h-3.5 rotate-180 text-purple-900" />
+              <span>{t.explorerView}</span>
+            </button>
+
+            <button
+              onClick={() => onViewChange('directory')}
+              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 ${
+                currentView === 'directory' ? 'win98-btn-active bg-[#d4d0c8]' : ''
+              }`}
+            >
+              <Users className="w-3.5 h-3.5 text-emerald-900" />
+              <span>{t.directoryView}</span>
+            </button>
+
+            <button
+              onClick={() => onViewChange('timeline')}
+              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 ${
+                currentView === 'timeline' ? 'win98-btn-active bg-[#d4d0c8]' : ''
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5 text-amber-900" />
+              <span>{t.timelineView}</span>
+            </button>
+
+            <button
+              onClick={() => onViewChange('stats')}
+              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 ${
+                currentView === 'stats' ? 'win98-btn-active bg-[#d4d0c8]' : ''
+              }`}
+            >
+              <BarChart3 className="w-3.5 h-3.5 text-indigo-900" />
+              <span>{t.statsView}</span>
+            </button>
+
+            <button
+              onClick={() => onViewChange('gallery')}
+              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 ${
+                currentView === 'gallery' ? 'win98-btn-active bg-[#d4d0c8]' : ''
+              }`}
+            >
+              <Images className="w-3.5 h-3.5 text-pink-900" />
+              <span>{t.galleryView}</span>
+            </button>
+
+            <button
+              onClick={() => onViewChange('tutorial')}
+              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 ${
+                currentView === 'tutorial' ? 'win98-btn-active bg-[#d4d0c8]' : ''
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5 text-blue-900" />
+              <span>{t.tutorialView}</span>
+            </button>
+          </div>
+
+          {/* Right Toolbar Actions */}
+          <div className="flex items-center space-x-1.5">
+            {/* Quick Search */}
+            <div className="relative">
+              <div className="relative flex items-center">
+                <Search className="w-3.5 h-3.5 text-gray-600 absolute left-2 pointer-events-none" />
+                <TabAutocompleteInput
+                  value={searchQuery}
+                  onChange={e => {
+                    setSearchQuery(e.target.value);
+                    setIsSearchOpen(true);
+                  }}
+                  onFocus={() => setIsSearchOpen(true)}
+                  suggestions={personNameSuggestions}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const target = searchResults[0] || persons.find(p => formatFullName(p, lang).toLowerCase() === searchQuery.trim().toLowerCase());
+                      if (target) {
+                        onSelectPerson(target);
+                        setIsSearchOpen(false);
+                        setSearchQuery('');
+                      }
+                    }
+                  }}
+                  placeholder={t.searchPlaceholder}
+                  className="w-36 md:w-48 pl-7 pr-2 py-1 win98-sunken text-xs font-bold bg-white text-black focus:outline-none"
+                />
+              </div>
+
+              {/* Autocomplete Menu */}
+              {isSearchOpen && searchResults.length > 0 && (
+                <div className="absolute right-0 mt-1 w-64 win98-box shadow-2xl overflow-hidden z-50">
+                  <div className="p-1.5 win98-title-navy text-[11px] font-bold text-white">
+                    {lang === 'zh' ? '匹配族人' : 'Matching Members'}
+                  </div>
+                  <div className="max-h-56 overflow-y-auto bg-white text-black">
+                    {searchResults.map(p => (
+                      <button
+                        key={p.id}
+                        onClick={() => {
+                          onSelectPerson(p);
+                          setIsSearchOpen(false);
+                          setSearchQuery('');
+                        }}
+                        className="w-full text-left p-2 hover:bg-[#000080] hover:text-white flex items-center justify-between text-xs transition border-b border-gray-200"
+                      >
+                        <div>
+                          <div className="font-bold">{formatFullName(p, lang)}</div>
+                          <div className="text-[10px] text-gray-600 group-hover:text-gray-200">
+                            {p.birthDate ? String(p.birthDate).substring(0, 4) : 'b.?'} • {p.occupation || 'Member'}
+                          </div>
+                        </div>
+                        <span className="text-xs font-bold">→</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Admin Add Person */}
+            {isAdminMode && (
+              <button
+                onClick={onOpenAddModal}
+                className="win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 text-black bg-[#d4d0c8]"
+              >
+                <Plus className="w-3.5 h-3.5 text-emerald-800" />
+                <span>{t.addMember}</span>
+              </button>
+            )}
+
+            {/* File Sync */}
+            {isAdminMode && (
+              <button
+                onClick={onOpenFileEditor}
+                className="win98-btn px-2 py-1 text-xs font-bold flex items-center space-x-1"
+                title="Sync database file"
+              >
+                <FileCode className="w-3.5 h-3.5 text-blue-900" />
+                <span className="font-mono text-[10px]">family.json</span>
+              </button>
+            )}
+
+            {/* Admin Login / Logout */}
+            {isAdminMode ? (
+              <button
+                onClick={onAdminLogout}
+                className="win98-btn px-2 py-1 text-xs font-bold flex items-center space-x-1 text-rose-900"
+                title="Logout"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{lang === 'zh' ? '退出' : 'Logout'}</span>
+              </button>
+            ) : (
+              <button
+                onClick={onOpenAdminLogin}
+                className="win98-btn px-2 py-1 text-xs font-bold flex items-center space-x-1 text-black"
+                title="Admin Login"
+              >
+                <Lock className="w-3.5 h-3.5 text-amber-700" />
+                <span>{lang === 'zh' ? '管理' : 'Admin'}</span>
+              </button>
+            )}
+
+            {/* Language Switcher */}
+            <button
+              onClick={onToggleLang}
+              className="win98-btn px-2 py-1 text-xs font-bold flex items-center space-x-1 text-black"
+              title="Toggle Language"
+            >
+              <Globe className="w-3.5 h-3.5 text-indigo-900" />
+              <span>{lang === 'en' ? '中文' : 'EN'}</span>
+            </button>
+
+            {/* Theme Toggle */}
+            <button
+              onClick={onToggleTheme}
+              className="win98-btn px-2 py-1 text-xs font-bold flex items-center space-x-1 text-black"
+              title={lang === 'zh' ? '切换为现代黑夜模式' : 'Switch to Modern Dark'}
+            >
+              <span>🌙</span>
+              <span className="hidden md:inline">{lang === 'zh' ? '现代模式' : 'Modern'}</span>
+            </button>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="h-16 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 lg:px-6 flex items-center justify-between z-30 shrink-0">
@@ -196,11 +442,14 @@ export default function Navbar({
               onFocus={() => setIsSearchOpen(true)}
               suggestions={personNameSuggestions}
               onKeyDown={e => {
-                if (e.key === 'Enter' && searchResults.length > 0) {
+                if (e.key === 'Enter') {
                   e.preventDefault();
-                  onSelectPerson(searchResults[0]);
-                  setIsSearchOpen(false);
-                  setSearchQuery('');
+                  const target = searchResults[0] || persons.find(p => formatFullName(p, lang).toLowerCase() === searchQuery.trim().toLowerCase());
+                  if (target) {
+                    onSelectPerson(target);
+                    setIsSearchOpen(false);
+                    setSearchQuery('');
+                  }
                 }
               }}
               placeholder={t.searchPlaceholder}
@@ -256,6 +505,16 @@ export default function Navbar({
         >
           <Globe className="w-3.5 h-3.5 text-indigo-400" />
           <span>{lang === 'en' ? '中文' : 'EN'}</span>
+        </button>
+
+        {/* Theme Switcher to Win98 */}
+        <button
+          onClick={onToggleTheme}
+          title={lang === 'zh' ? '切换为经典 Windows 98 复古灰色主题' : 'Switch to Classic Windows 98 Retro Grey Theme'}
+          className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-indigo-500/50 text-slate-300 hover:text-white text-xs font-medium transition"
+        >
+          <span>🖥️</span>
+          <span className="hidden lg:inline">{lang === 'zh' ? 'Win98 复古' : 'Win98'}</span>
         </button>
 
         {/* Live File Sync Pill (data/family.json) - Only in Admin Mode */}
