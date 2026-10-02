@@ -7,10 +7,12 @@ export default function ImageCropperModal({
   onClose,
   imageSrc,
   onCropComplete,
-  lang = 'en'
+  lang = 'en',
+  theme = 'win98'
 }) {
   const t = translations[lang] || translations.en;
-  const canvasRef = useRef(null);
+  const isRetro = theme === 'win98';
+
   const containerRef = useRef(null);
 
   const [imageObj, setImageObj] = useState(null);
@@ -114,7 +116,7 @@ export default function ImageCropperModal({
     outCanvas.height = OUTPUT_SIZE;
     const ctx = outCanvas.getContext('2d');
 
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = isRetro ? '#ffffff' : '#0f172a';
     ctx.fillRect(0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
 
     // Scaling ratio from UI preview to high-res canvas
@@ -166,38 +168,72 @@ export default function ImageCropperModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[140] overflow-y-auto bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
+    <div className={`fixed inset-0 z-[140] overflow-y-auto flex items-center justify-center p-3 sm:p-4 ${
+      isRetro 
+        ? 'bg-black/50 select-none' 
+        : 'bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-150'
+    }`}>
       <div 
-        className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
+        className={isRetro 
+          ? 'relative w-full max-w-lg win98-box shadow-2xl bg-[#c0c0c0] text-black overflow-hidden' 
+          : 'relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150'
+        }
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/70">
-          <div className="flex items-center space-x-2.5">
-            <div className="p-2 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
-              <Crop className="w-5 h-5" />
+        {/* Header / Title Bar */}
+        {isRetro ? (
+          <div className="px-3 py-1 flex items-center justify-between text-xs font-bold text-white win98-title-navy shrink-0 select-none">
+            <div className="flex items-center space-x-1.5 min-w-0">
+              <Crop className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">{lang === 'zh' ? '裁剪与调整族人肖像' : 'Crop & Adjust Portrait'}</span>
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-white">
-                {lang === 'zh' ? '裁剪与调整族人肖像' : 'Crop & Adjust Portrait'}
-              </h3>
-              <p className="text-[11px] text-slate-400">
-                {lang === 'zh' ? '拖拽移动位置，使用滑块缩放对准头像' : 'Drag to reposition, adjust zoom to frame headshot'}
-              </p>
-            </div>
+            <button
+              onClick={onClose}
+              className="win98-btn px-1.5 py-0.5 text-xs font-black text-black leading-none ml-2"
+              title={lang === 'zh' ? '关闭' : 'Close'}
+            >
+              ✕
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        ) : (
+          <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/70">
+            <div className="flex items-center space-x-2.5">
+              <div className="p-2 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
+                <Crop className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white">
+                  {lang === 'zh' ? '裁剪与调整族人肖像' : 'Crop & Adjust Portrait'}
+                </h3>
+                <p className="text-[11px] text-slate-400">
+                  {lang === 'zh' ? '拖拽移动位置，使用滑块缩放对准头像' : 'Drag to reposition, adjust zoom to frame headshot'}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+
+        {/* Subheader info in retro */}
+        {isRetro && (
+          <div className="px-3 py-1.5 bg-[#d4d0c8] border-b border-gray-400 text-xs font-bold text-black flex items-center justify-between">
+            <span>{lang === 'zh' ? '拖拽圆框内移动，使用下方滑块缩放' : 'Drag inside circle to move, adjust zoom slider below'}</span>
+            <span className="text-[11px] font-mono text-blue-900">400×400px</span>
+          </div>
+        )}
 
         {/* Crop Viewport */}
-        <div className="p-6 flex flex-col items-center justify-center bg-slate-950">
+        <div className={isRetro 
+          ? 'p-4 flex flex-col items-center justify-center win98-sunken bg-[#dfdfdf] m-2 select-none' 
+          : 'p-6 flex flex-col items-center justify-center bg-slate-950'
+        }>
           {loadError ? (
-            <div className="text-center py-12 text-rose-400 text-xs">
+            <div className="text-center py-12 text-rose-700 text-xs font-bold">
               {lang === 'zh' ? '无法载入图片，请检查网络链接或格式。' : 'Failed to load image. Please verify URL or file format.'}
             </div>
           ) : (
@@ -208,7 +244,10 @@ export default function ImageCropperModal({
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
               style={{ width: `${CROP_SIZE}px`, height: `${CROP_SIZE}px` }}
-              className="relative overflow-hidden rounded-full border-4 border-indigo-500/80 shadow-2xl bg-slate-900 cursor-move select-none"
+              className={isRetro 
+                ? 'relative overflow-hidden rounded-full border-4 border-[#000080] shadow-xl bg-white cursor-move select-none' 
+                : 'relative overflow-hidden rounded-full border-4 border-indigo-500/80 shadow-2xl bg-slate-900 cursor-move select-none'
+              }
             >
               {/* Image Preview with transform */}
               {imageObj && (
@@ -234,23 +273,29 @@ export default function ImageCropperModal({
               )}
 
               {/* Crosshair guide overlay */}
-              <div className="absolute inset-0 pointer-events-none border border-white/20 rounded-full flex items-center justify-center">
-                <div className="w-full h-px bg-white/10 absolute" />
-                <div className="h-full w-px bg-white/10 absolute" />
+              <div className="absolute inset-0 pointer-events-none border border-black/20 rounded-full flex items-center justify-center">
+                <div className="w-full h-px bg-black/15 absolute" />
+                <div className="h-full w-px bg-black/15 absolute" />
               </div>
             </div>
           )}
 
-          <div className="mt-3 flex items-center space-x-1.5 text-[11px] text-slate-400">
-            <Move className="w-3.5 h-3.5 text-indigo-400" />
-            <span>{lang === 'zh' ? '按住并拖动图片调整位置' : 'Click & drag inside circle to pan position'}</span>
+          <div className={isRetro 
+            ? 'mt-2.5 flex items-center space-x-1.5 text-xs font-bold text-gray-800' 
+            : 'mt-3 flex items-center space-x-1.5 text-[11px] text-slate-400'
+          }>
+            <Move className={`w-3.5 h-3.5 ${isRetro ? 'text-blue-900' : 'text-indigo-400'}`} />
+            <span>{lang === 'zh' ? '按住并拖动图片调整头像居中' : 'Click & drag inside circle to pan position'}</span>
           </div>
         </div>
 
         {/* Controls: Zoom slider & Rotate */}
-        <div className="p-4 bg-slate-900 border-t border-slate-800 space-y-3">
+        <div className={isRetro 
+          ? 'p-3 bg-[#c0c0c0] border-t border-gray-400 space-y-2.5' 
+          : 'p-4 bg-slate-900 border-t border-slate-800 space-y-3'
+        }>
           <div className="flex items-center justify-between space-x-3">
-            <span className="text-xs text-slate-400 flex items-center">
+            <span className={isRetro ? "text-xs font-bold text-black flex items-center" : "text-xs text-slate-400 flex items-center"}>
               <ZoomOut className="w-3.5 h-3.5 mr-1" />
               1x
             </span>
@@ -261,9 +306,12 @@ export default function ImageCropperModal({
               step="0.05"
               value={zoom}
               onChange={e => setZoom(parseFloat(e.target.value))}
-              className="flex-1 accent-indigo-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+              className={isRetro 
+                ? 'flex-1 accent-[#000080] h-2 cursor-pointer' 
+                : 'flex-1 accent-indigo-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer'
+              }
             />
-            <span className="text-xs text-slate-400 flex items-center">
+            <span className={isRetro ? "text-xs font-bold text-black flex items-center" : "text-xs text-slate-400 flex items-center"}>
               <ZoomIn className="w-3.5 h-3.5 mr-1" />
               3x
             </span>
@@ -271,20 +319,26 @@ export default function ImageCropperModal({
             <button
               type="button"
               onClick={() => setRotation(r => (r + 90) % 360)}
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center space-x-1 text-xs border border-slate-700"
+              className={isRetro 
+                ? 'win98-btn px-2.5 py-1 text-xs font-bold text-black flex items-center space-x-1' 
+                : 'p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center space-x-1 text-xs border border-slate-700'
+              }
               title={lang === 'zh' ? '旋转 90°' : 'Rotate 90°'}
             >
-              <RotateCw className="w-3.5 h-3.5" />
+              <RotateCw className="w-3.5 h-3.5 text-blue-900" />
               <span>90°</span>
             </button>
           </div>
 
           {/* Action buttons */}
-          <div className="pt-2 flex items-center justify-end space-x-2.5">
+          <div className="pt-1.5 flex items-center justify-end space-x-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs font-medium transition"
+              className={isRetro 
+                ? 'win98-btn px-4 py-1.5 text-xs font-bold text-black' 
+                : 'px-4 py-2 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs font-medium transition'
+              }
             >
               {t.cancel}
             </button>
@@ -292,9 +346,12 @@ export default function ImageCropperModal({
               type="button"
               onClick={handleApplyCrop}
               disabled={loadError || !imageObj}
-              className="flex items-center space-x-1.5 px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition shadow-md shadow-indigo-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
+              className={isRetro 
+                ? 'win98-btn px-5 py-1.5 text-xs font-bold text-black bg-blue-100 flex items-center space-x-1.5 disabled:opacity-40' 
+                : 'flex items-center space-x-1.5 px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition shadow-md shadow-indigo-600/30 disabled:opacity-50 disabled:cursor-not-allowed'
+              }
             >
-              <Check className="w-4 h-4" />
+              <Check className="w-4 h-4 text-emerald-900" />
               <span>{lang === 'zh' ? '应用裁剪并保存' : 'Apply Crop'}</span>
             </button>
           </div>

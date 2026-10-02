@@ -98,94 +98,97 @@ export default function PeopleDirectory({
         <div
           key={person.id}
           onClick={() => onSelectPerson(person)}
-          className="win98-box cursor-pointer select-none p-1.5 transition-transform hover:scale-[1.01] flex flex-col justify-between"
+          className="win98-box cursor-pointer select-none p-1.5 transition-transform hover:scale-[1.01] flex flex-col justify-between h-[215px] min-h-[215px] max-h-[215px] overflow-hidden"
         >
-          <div>
-            {/* Title bar */}
-            <div className={`px-3 py-1 flex items-center justify-between text-xs font-bold text-white select-none ${titleClass}`}>
-              <div className="flex items-center space-x-1.5">
-                <span className="text-[13px]">{person.gender === 'female' ? '♀' : '♂'}</span>
-                <span className="tracking-wide font-extrabold">
-                  {person.gender === 'female' ? (lang === 'zh' ? '女性族人' : 'Female Member') : (lang === 'zh' ? '男性族人' : 'Male Member')}
-                </span>
-              </div>
-              <span className="text-[11px] font-mono opacity-90 uppercase font-bold">
-                {person.isLiving ? (lang === 'zh' ? '在世' : 'Living') : (lang === 'zh' ? '已故' : 'Deceased')}
+          {/* Title bar */}
+          <div className={`px-3 py-1 flex items-center justify-between text-xs font-bold text-white select-none h-[28px] min-h-[28px] shrink-0 ${titleClass}`}>
+            <div className="flex items-center space-x-1.5 min-w-0">
+              <span className="text-[13px] shrink-0">{person.gender === 'female' ? '♀' : '♂'}</span>
+              <span className="tracking-wide font-extrabold truncate">
+                {person.gender === 'female' ? (lang === 'zh' ? '女性族人' : 'Female Member') : (lang === 'zh' ? '男性族人' : 'Male Member')}
               </span>
             </div>
+            <span className="text-[11px] font-mono opacity-90 uppercase font-bold shrink-0 ml-2">
+              {person.isLiving ? (lang === 'zh' ? '在世' : 'Living') : (lang === 'zh' ? '已故' : 'Deceased')}
+            </span>
+          </div>
 
-            {/* Inset content */}
-            <div className="m-1 win98-sunken p-3 bg-white text-black flex items-start space-x-3.5">
-              {person.avatar ? (
-                <img
-                  src={person.avatar}
-                  alt={formatFullName(person, lang)}
-                  className="w-14 h-14 sm:w-16 sm:h-16 rounded object-cover border border-gray-400 shrink-0"
-                />
-              ) : (
-                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#dfdfdf] border border-gray-400 rounded flex items-center justify-center text-gray-800 font-black text-2xl shrink-0">
-                  {person.gender === 'female' ? '♀' : '♂'}
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <h3 className="font-black text-black text-base sm:text-lg leading-snug break-words whitespace-normal">
+          {/* Inset content */}
+          <div className="m-1 win98-sunken p-2.5 bg-white text-black flex items-start space-x-3 flex-1 min-h-0 overflow-hidden">
+            {person.avatar ? (
+              <img
+                src={person.avatar}
+                alt={formatFullName(person, lang)}
+                className="w-14 h-14 sm:w-16 sm:h-16 rounded object-cover border border-gray-400 shrink-0"
+              />
+            ) : (
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#dfdfdf] border border-gray-400 rounded flex items-center justify-center text-gray-800 font-black text-2xl shrink-0">
+                {person.gender === 'female' ? '♀' : '♂'}
+              </div>
+            )}
+            <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
+              <div>
+                <h3 
+                  className="font-black text-black text-[15px] sm:text-base leading-snug break-words line-clamp-2"
+                  title={formatFullName(person, lang)}
+                >
                   {formatFullName(person, lang)}
                 </h3>
                 {person.chineseName && !formatFullName(person, lang).includes(person.chineseName) && (
-                  <div className="text-sm sm:text-base font-extrabold text-[#000080] break-words whitespace-normal mt-0.5">
+                  <div className="text-xs sm:text-sm font-extrabold text-[#000080] truncate mt-0.5">
                     {person.chineseName}
                   </div>
                 )}
                 {person.christianName && !formatFullName(person, lang).toLowerCase().includes(person.christianName.toLowerCase()) && (
-                  <div className="text-xs sm:text-sm font-bold text-neutral-800 break-words whitespace-normal mt-0.5">
+                  <div className="text-xs sm:text-sm font-bold text-neutral-800 truncate mt-0.5">
                     ✝ {person.christianName}
                   </div>
                 )}
-                <p className="text-xs sm:text-sm font-extrabold text-neutral-900 mt-1 whitespace-normal">
+                <p className="text-xs sm:text-sm font-extrabold text-neutral-900 mt-0.5 truncate">
                   {getLifespan(person, lang)}
                 </p>
-                <div className="mt-1 flex items-center space-x-1.5 flex-wrap gap-y-1">
-                  {person.isLiving ? (
-                    <span className="text-xs font-black px-2 py-0.5 bg-emerald-100 text-emerald-950 border border-emerald-500 rounded">
-                      {lang === 'zh' ? '在世' : 'Living'}
-                    </span>
-                  ) : (
-                    <span className="text-xs font-black px-2 py-0.5 bg-neutral-200 text-neutral-900 border border-neutral-400 rounded">
-                      {lang === 'zh' ? '已故' : 'Deceased'}
-                    </span>
-                  )}
-                  {person.occupation && (
-                    <span className="text-xs font-bold text-neutral-800 break-words whitespace-normal">
-                      • {person.occupation}
-                    </span>
-                  )}
-                </div>
+              </div>
+              <div className="mt-1 flex items-center space-x-1.5 overflow-hidden text-xs shrink-0">
+                {person.isLiving ? (
+                  <span className="text-xs font-black px-2 py-0.5 bg-emerald-100 text-emerald-950 border border-emerald-500 rounded shrink-0">
+                    {lang === 'zh' ? '在世' : 'Living'}
+                  </span>
+                ) : (
+                  <span className="text-xs font-black px-2 py-0.5 bg-neutral-200 text-neutral-900 border border-neutral-400 rounded shrink-0">
+                    {lang === 'zh' ? '已故' : 'Deceased'}
+                  </span>
+                )}
+                {person.occupation && (
+                  <span className="text-xs font-bold text-neutral-800 truncate" title={person.occupation}>
+                    • {person.occupation}
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
           {/* Buttons */}
-          <div className="p-1 pt-0 flex items-center justify-between gap-1.5 text-xs" onClick={e => e.stopPropagation()}>
+          <div className="p-1 pt-0 flex items-center justify-between gap-1 text-xs h-[36px] min-h-[36px] shrink-0" onClick={e => e.stopPropagation()}>
             <button
               onClick={() => onSetRootPerson(person.id)}
-              className="win98-btn flex-1 py-1.5 px-2 text-xs font-bold flex items-center justify-center text-black"
+              className="win98-btn flex-1 py-1 px-2 text-xs font-bold flex items-center justify-center text-black"
             >
-              <Eye className="w-3.5 h-3.5 mr-1 text-blue-900" />
+              <Eye className="w-3.5 h-3.5 mr-1 text-blue-900 shrink-0" />
               <span>{lang === 'zh' ? '世系树' : 'Tree'}</span>
             </button>
             <button
               onClick={() => onExploreAncestors(person.id)}
-              className="win98-btn flex-1 py-1.5 px-2 text-xs font-bold flex items-center justify-center text-black"
+              className="win98-btn flex-1 py-1 px-2 text-xs font-bold flex items-center justify-center text-black"
             >
-              <GitFork className="w-3.5 h-3.5 mr-1 rotate-180 text-purple-900" />
+              <GitFork className="w-3.5 h-3.5 mr-1 rotate-180 text-purple-900 shrink-0" />
               <span>{lang === 'zh' ? '祖先' : 'Ancestors'}</span>
             </button>
             {onEditPerson && (
               <button
                 onClick={() => onEditPerson(person)}
-                className="win98-btn py-1.5 px-2.5 text-xs font-bold flex items-center text-black"
+                className="win98-btn py-1 px-2.5 text-xs font-bold flex items-center text-black shrink-0"
               >
-                <Edit className="w-3.5 h-3.5 mr-1 text-emerald-900" />
+                <Edit className="w-3.5 h-3.5 mr-1 text-emerald-900 shrink-0" />
                 <span>{lang === 'zh' ? '编辑' : 'Edit'}</span>
               </button>
             )}
@@ -207,7 +210,7 @@ export default function PeopleDirectory({
       <div
         key={person.id}
         onClick={() => onSelectPerson(person)}
-        className="group bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-indigo-500/50 hover:shadow-xl hover:shadow-indigo-500/5 transition cursor-pointer flex flex-col justify-between"
+        className="group bg-slate-900 border border-slate-800 rounded-2xl p-4 hover:border-indigo-500/50 hover:shadow-xl hover:shadow-indigo-500/5 transition cursor-pointer flex flex-col justify-between h-[215px] min-h-[215px] max-h-[215px] overflow-hidden"
       >
         <div>
           <div className="flex items-start justify-between">

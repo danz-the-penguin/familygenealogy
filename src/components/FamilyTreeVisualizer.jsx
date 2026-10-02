@@ -503,7 +503,7 @@ function PersonNodeCard({
     return (
       <div
         onClick={onSelect}
-        className={`group relative win98-box cursor-pointer select-none transition-transform duration-200 origin-center w-[360px] min-w-[360px] max-w-[360px] flex flex-col justify-between ${
+        className={`group relative win98-box cursor-pointer select-none transition-transform duration-200 origin-center w-[360px] min-w-[360px] max-w-[360px] h-[215px] min-h-[215px] max-h-[215px] flex flex-col justify-between overflow-hidden ${
           magnify 
             ? 'hover:scale-[1.85] hover:z-50 hover:shadow-2xl' 
             : 'hover:scale-[1.03]'
@@ -514,18 +514,18 @@ function PersonNodeCard({
         }`}
       >
         {/* Win98 Card Title Bar */}
-        <div className={`px-3 py-1 flex items-center justify-between text-xs font-bold text-white select-none ${titleClass}`}>
-          <div className="flex items-center space-x-1.5">
-            <span className="text-[13px]">{isRoot ? '👑' : (isFemale ? '♀' : '♂')}</span>
-            <span className="tracking-wide font-extrabold">{role}</span>
+        <div className={`px-3 py-1 flex items-center justify-between text-xs font-bold text-white select-none h-[28px] min-h-[28px] shrink-0 ${titleClass}`}>
+          <div className="flex items-center space-x-1.5 min-w-0">
+            <span className="text-[13px] shrink-0">{isRoot ? '👑' : (isFemale ? '♀' : '♂')}</span>
+            <span className="tracking-wide font-extrabold truncate">{role}</span>
           </div>
-          <span className="text-[11px] font-mono opacity-90 uppercase font-bold">
+          <span className="text-[11px] font-mono opacity-90 uppercase font-bold shrink-0 ml-2">
             {isFemale ? (lang === 'zh' ? '女性' : 'Female') : (lang === 'zh' ? '男性' : 'Male')}
           </span>
         </div>
 
         {/* Win98 Sunken White Panel for Maximum Legibility */}
-        <div className="m-1 win98-sunken p-3 bg-white text-black flex items-start space-x-3.5 flex-1">
+        <div className="m-1 win98-sunken p-2.5 bg-white text-black flex items-start space-x-3 flex-1 min-h-0 overflow-hidden">
           {person.avatar ? (
             <img
               src={person.avatar}
@@ -538,33 +538,38 @@ function PersonNodeCard({
             </div>
           )}
 
-          <div className="flex-1 min-w-0">
-            <h3 className="font-black text-black text-base sm:text-lg leading-snug break-words whitespace-normal">
-              {formatFullName(person, lang)}
-            </h3>
+          <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
+            <div>
+              <h3 
+                className="font-black text-black text-[15px] sm:text-base leading-snug break-words line-clamp-2"
+                title={formatFullName(person, lang)}
+              >
+                {formatFullName(person, lang)}
+              </h3>
 
-            {person.chineseName && !formatFullName(person, lang).includes(person.chineseName) && (
-              <div className="text-sm sm:text-base font-extrabold text-[#000080] break-words whitespace-normal mt-0.5">
-                {person.chineseName}
-              </div>
-            )}
+              {person.chineseName && !formatFullName(person, lang).includes(person.chineseName) && (
+                <div className="text-xs sm:text-sm font-extrabold text-[#000080] truncate mt-0.5">
+                  {person.chineseName}
+                </div>
+              )}
 
-            <p className="text-xs sm:text-sm font-extrabold text-neutral-900 mt-1 whitespace-normal">
-              {getLifespan(person, lang)}
-            </p>
+              <p className="text-xs sm:text-sm font-extrabold text-neutral-900 mt-0.5 truncate">
+                {getLifespan(person, lang)}
+              </p>
+            </div>
 
-            <div className="mt-1 flex items-center space-x-1.5 flex-wrap gap-y-1">
+            <div className="mt-1 flex items-center space-x-1.5 overflow-hidden text-xs shrink-0">
               {person.isLiving ? (
-                <span className="text-xs font-black px-2 py-0.5 bg-emerald-100 text-emerald-950 border border-emerald-500 rounded">
+                <span className="text-xs font-black px-2 py-0.5 bg-emerald-100 text-emerald-950 border border-emerald-500 rounded shrink-0">
                   {lang === 'zh' ? '在世' : 'Living'}
                 </span>
               ) : (
-                <span className="text-xs font-black px-2 py-0.5 bg-neutral-200 text-neutral-900 border border-neutral-400 rounded">
+                <span className="text-xs font-black px-2 py-0.5 bg-neutral-200 text-neutral-900 border border-neutral-400 rounded shrink-0">
                   {lang === 'zh' ? '已故' : 'Deceased'}
                 </span>
               )}
               {person.occupation && (
-                <span className="text-xs font-bold text-neutral-800 break-words whitespace-normal">
+                <span className="text-xs font-bold text-neutral-800 truncate" title={person.occupation}>
                   • {person.occupation}
                 </span>
               )}
@@ -574,65 +579,73 @@ function PersonNodeCard({
 
         {/* Win98 Action Buttons */}
         {isRoot ? (
-          <div className="p-1 pt-0 flex flex-wrap gap-1" onClick={e => e.stopPropagation()}>
+          <div className="p-1 pt-0 flex items-center justify-between gap-1 text-xs h-[36px] min-h-[36px] shrink-0" onClick={e => e.stopPropagation()}>
             <button
               onClick={onExploreAncestors}
-              className="win98-btn flex-1 text-xs font-bold py-1 px-1.5 flex items-center justify-center text-black"
+              className="win98-btn flex-1 text-[11px] font-bold py-1 px-1 flex items-center justify-center text-black"
+              title={lang === 'zh' ? '查看祖先世系' : 'Ancestors'}
             >
-              <GitFork className="w-3 h-3 mr-1 rotate-180" /> {lang === 'zh' ? '祖先' : 'Ancestors'}
+              <GitFork className="w-3 h-3 mr-0.5 rotate-180 shrink-0 text-purple-900" />
+              <span className="truncate">{lang === 'zh' ? '祖先' : 'Ancestors'}</span>
             </button>
             <button
               onClick={onExploreCousins}
-              className="win98-btn flex-1 text-xs font-bold py-1 px-1.5 flex items-center justify-center text-black"
+              className="win98-btn flex-1 text-[11px] font-bold py-1 px-1 flex items-center justify-center text-black"
+              title={lang === 'zh' ? '查看堂表亲' : 'Cousins'}
             >
-              <Users className="w-3 h-3 mr-1" /> {lang === 'zh' ? '堂表亲' : 'Cousins'}
+              <Users className="w-3 h-3 mr-0.5 shrink-0 text-blue-900" />
+              <span className="truncate">{lang === 'zh' ? '堂表' : 'Cousins'}</span>
             </button>
             {onAddSpouse && (
               <button
                 onClick={onAddSpouse}
-                className="win98-btn text-xs font-bold py-1 px-1.5 flex items-center justify-center text-black"
+                className="win98-btn text-[11px] font-bold py-1 px-1.5 flex items-center justify-center text-black shrink-0"
                 title={lang === 'zh' ? '添加或关联配偶' : 'Add or Link Spouse'}
               >
-                <Heart className="w-3 h-3 mr-0.5 text-rose-600" /> {lang === 'zh' ? '配偶' : 'Spouse'}
+                <Heart className="w-3 h-3 mr-0.5 text-rose-600 shrink-0" />
+                <span>{lang === 'zh' ? '配偶' : 'Spouse'}</span>
               </button>
             )}
             {onAddChild && (
               <button
                 onClick={onAddChild}
-                className="win98-btn text-xs font-bold py-1 px-1.5 flex items-center justify-center text-black"
+                className="win98-btn text-[11px] font-bold py-1 px-1.5 flex items-center justify-center text-black shrink-0"
+                title={lang === 'zh' ? '添加子女后代' : 'Add Child'}
               >
-                <Plus className="w-3 h-3 mr-0.5" /> {lang === 'zh' ? '子女' : 'Child'}
+                <Plus className="w-3 h-3 mr-0.5 text-emerald-800 shrink-0" />
+                <span>{lang === 'zh' ? '子女' : 'Child'}</span>
               </button>
             )}
             {onEdit && (
               <button
                 onClick={onEdit}
-                className="win98-btn text-xs font-bold py-1 px-1.5 flex items-center justify-center text-black"
+                className="win98-btn text-[11px] font-bold py-1 px-1.5 flex items-center justify-center text-black shrink-0"
                 title={lang === 'zh' ? '编辑族人' : 'Edit Member'}
               >
-                <Edit className="w-3 h-3 mr-0.5" /> {lang === 'zh' ? '编辑' : 'Edit'}
+                <Edit className="w-3 h-3 mr-0.5 text-amber-800 shrink-0" />
+                <span>{lang === 'zh' ? '编辑' : 'Edit'}</span>
               </button>
             )}
           </div>
         ) : (
-          <div className="p-1 pt-0 flex items-center justify-between text-xs" onClick={e => e.stopPropagation()}>
+          <div className="p-1 pt-0 flex items-center justify-between text-xs h-[36px] min-h-[36px] shrink-0" onClick={e => e.stopPropagation()}>
             <button
               onClick={onSetRoot}
-              className="win98-btn text-xs font-bold py-0.5 px-2 flex items-center text-black"
+              className="win98-btn text-xs font-bold py-1 px-2.5 flex items-center text-black"
             >
-              <Eye className="w-3 h-3 mr-1" /> {lang === 'zh' ? '定为中心' : 'Focus'}
+              <Eye className="w-3.5 h-3.5 mr-1 text-blue-900" /> {lang === 'zh' ? '定为中心' : 'Focus'}
             </button>
             <div className="flex items-center space-x-1">
               {onEdit && (
                 <button
                   onClick={onEdit}
-                  className="win98-btn text-xs font-bold py-0.5 px-1.5 flex items-center text-black"
+                  className="win98-btn text-xs font-bold py-1 px-2 flex items-center text-black"
                   title={lang === 'zh' ? '编辑族人' : 'Edit Member'}
                 >
-                  <Edit className="w-3 h-3 mr-1" /> {lang === 'zh' ? '编辑' : 'Edit'}
+                  <Edit className="w-3.5 h-3.5 mr-1 text-emerald-900" /> {lang === 'zh' ? '编辑' : 'Edit'}
                 </button>
               )}
-              <span className="text-[10px] text-gray-700 font-bold">{lang === 'zh' ? '详情' : 'Info'}</span>
+              <span className="text-[10px] text-gray-700 font-bold px-1">{lang === 'zh' ? '详情' : 'Info'}</span>
             </div>
           </div>
         )}
@@ -658,17 +671,17 @@ function PersonNodeCard({
   return (
     <div
       onClick={onSelect}
-      className={`group relative bg-slate-900 border rounded-2xl cursor-pointer transition-all duration-300 ease-out origin-center ${
+      className={`group relative bg-slate-900 border rounded-2xl cursor-pointer transition-all duration-300 ease-out origin-center w-[360px] min-w-[360px] max-w-[360px] h-[215px] min-h-[215px] max-h-[215px] flex flex-col justify-between overflow-hidden p-3.5 ${
         magnify 
           ? 'hover:scale-[2] hover:z-50 hover:shadow-[0_25px_60px_-10px_rgba(0,0,0,0.95)] hover:ring-2 hover:ring-indigo-400/80 hover:border-indigo-400' 
           : 'hover:scale-[1.03]'
       } ${
         isRoot 
-          ? 'border-indigo-500 shadow-2xl shadow-indigo-500/20 z-10 highlight-node p-4 w-[360px] min-w-[360px] max-w-[360px]' 
-          : `${genderBorder} hover:shadow-xl hover:shadow-indigo-500/5 p-4 w-[360px] min-w-[360px] max-w-[360px]`
+          ? 'border-indigo-500 shadow-2xl shadow-indigo-500/20 z-10 highlight-node' 
+          : `${genderBorder} hover:shadow-xl hover:shadow-indigo-500/5`
       }`}
     >
-      <div className="flex items-start space-x-3.5">
+      <div className="flex items-start space-x-3.5 flex-1 min-h-0 overflow-hidden">
         {person.avatar ? (
           <img
             src={person.avatar}
@@ -683,60 +696,68 @@ function PersonNodeCard({
           </div>
         )}
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider ${roleBadgeColor}`}>
-              {role}
-            </span>
+        <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider ${roleBadgeColor}`}>
+                {role}
+              </span>
+            </div>
+
+            <h3 className={`font-bold text-white break-words line-clamp-2 leading-snug mt-1 group-hover:text-indigo-300 transition ${isRoot ? 'text-base' : 'text-sm sm:text-base'}`}>
+              {formatFullName(person, lang)}
+            </h3>
+
+            <p className="text-xs sm:text-sm text-slate-300 mt-1 truncate">
+              {getLifespan(person, lang)}
+            </p>
           </div>
 
-          <h3 className={`font-bold text-white break-words whitespace-normal leading-snug mt-1 group-hover:text-indigo-300 transition ${isRoot ? 'text-lg' : 'text-base'}`}>
-            {formatFullName(person, lang)}
-          </h3>
-
-          <p className="text-xs sm:text-sm text-slate-300 mt-1 whitespace-normal">
-            {getLifespan(person, lang)}
-          </p>
+          {person.occupation && (
+            <div className="text-xs text-slate-400 truncate">
+              {person.occupation}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Root card extra actions */}
       {isRoot && (
-        <div className="mt-4 pt-3 border-t border-slate-800/80 flex flex-wrap gap-1.5" onClick={e => e.stopPropagation()}>
+        <div className="mt-2 pt-2 border-t border-slate-800/80 flex items-center justify-between gap-1 h-[36px] min-h-[36px] shrink-0" onClick={e => e.stopPropagation()}>
           <button
             onClick={onExploreAncestors}
-            className="flex-1 text-[11px] font-medium py-1.5 px-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 flex items-center justify-center transition"
+            className="flex-1 text-[11px] font-medium py-1 px-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 flex items-center justify-center transition"
           >
-            <GitFork className="w-3 h-3 mr-1 rotate-180" /> {lang === 'zh' ? '祖先' : 'Ancestors'}
+            <GitFork className="w-3 h-3 mr-0.5 rotate-180 shrink-0" /> <span className="truncate">{lang === 'zh' ? '祖先' : 'Ancestors'}</span>
           </button>
           <button
             onClick={onExploreCousins}
-            className="flex-1 text-[11px] font-medium py-1.5 px-2 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/20 flex items-center justify-center transition"
+            className="flex-1 text-[11px] font-medium py-1 px-1 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/20 flex items-center justify-center transition"
           >
-            <Users className="w-3 h-3 mr-1" /> {lang === 'zh' ? '堂表亲' : 'Cousins'}
+            <Users className="w-3 h-3 mr-0.5 shrink-0" /> <span className="truncate">{lang === 'zh' ? '堂表' : 'Cousins'}</span>
           </button>
           {onAddSpouse && (
             <button
               onClick={onAddSpouse}
-              className="text-[11px] font-medium py-1.5 px-2 rounded-lg bg-pink-500/10 hover:bg-pink-500/20 text-pink-300 border border-pink-500/20 flex items-center justify-center transition"
+              className="text-[11px] font-medium py-1 px-1.5 rounded-lg bg-pink-500/10 hover:bg-pink-500/20 text-pink-300 border border-pink-500/20 flex items-center justify-center transition shrink-0"
               title={lang === 'zh' ? '添加或关联配偶' : 'Add or Link Spouse'}
             >
-              <Heart className="w-3 h-3 mr-0.5" /> {lang === 'zh' ? '配偶' : 'Spouse'}
+              <Heart className="w-3 h-3 mr-0.5 shrink-0" /> {lang === 'zh' ? '配偶' : 'Spouse'}
             </button>
           )}
           <button
             onClick={onAddChild}
-            className="text-[11px] font-medium py-1.5 px-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 flex items-center justify-center transition"
+            className="text-[11px] font-medium py-1 px-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 flex items-center justify-center transition shrink-0"
           >
-            <Plus className="w-3 h-3 mr-0.5" /> {lang === 'zh' ? '子女' : 'Child'}
+            <Plus className="w-3 h-3 mr-0.5 shrink-0" /> {lang === 'zh' ? '子女' : 'Child'}
           </button>
           {onEdit && (
             <button
               onClick={onEdit}
-              className="text-[11px] font-medium py-1.5 px-2 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 flex items-center justify-center transition"
+              className="text-[11px] font-medium py-1 px-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 flex items-center justify-center transition shrink-0"
               title={lang === 'zh' ? '编辑族人' : 'Edit Member'}
             >
-              <Edit className="w-3 h-3 mr-0.5" /> {lang === 'zh' ? '编辑' : 'Edit'}
+              <Edit className="w-3 h-3 mr-0.5 shrink-0" /> {lang === 'zh' ? '编辑' : 'Edit'}
             </button>
           )}
         </div>
@@ -744,12 +765,12 @@ function PersonNodeCard({
 
       {/* Set as root button & edit button for non-root nodes */}
       {!isRoot && (
-        <div className="mt-2 pt-2 border-t border-slate-800/60 flex items-center justify-between" onClick={e => e.stopPropagation()}>
+        <div className="mt-2 pt-2 border-t border-slate-800/60 flex items-center justify-between h-[36px] min-h-[36px] shrink-0" onClick={e => e.stopPropagation()}>
           <button
             onClick={onSetRoot}
             className="text-[11px] text-slate-400 hover:text-indigo-400 flex items-center transition"
           >
-            <Eye className="w-3 h-3 mr-1" /> {lang === 'zh' ? '定为世系中心' : 'Focus Tree Here'}
+            <Eye className="w-3 h-3 mr-1" /> {lang === 'zh' ? '定为世系中心' : 'Focus Tree'}
           </button>
           <div className="flex items-center space-x-1.5">
             {onEdit && (

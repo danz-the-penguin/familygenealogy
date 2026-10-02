@@ -2256,6 +2256,7 @@ export default function PersonModal({
           onSelectPhoto={handleSelectFromGallery}
           onSelectAndCrop={handleSelectAndCropFromGallery}
           lang={lang}
+          theme={theme}
         />
 
         {/* Image Cropper Modal */}
@@ -2265,6 +2266,7 @@ export default function PersonModal({
           imageSrc={imageToCrop}
           onCropComplete={handleCropComplete}
           lang={lang}
+          theme={theme}
         />
       </div>
     </div>
