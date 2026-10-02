@@ -357,7 +357,7 @@ export default function PhotoGallery({
       </div>
 
       {/* Gallery Photo Grid Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-2.5 sm:p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
           {filteredPhotos.length === 0 ? (
             <div className="text-center py-20 bg-slate-900/30 rounded-3xl border border-slate-800/60 p-8">

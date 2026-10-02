@@ -117,7 +117,7 @@ export default function KeyboardShortcutsModal({
   if (theme === 'win98') {
     return (
       <div 
-        className="fixed inset-0 z-[120] overflow-y-auto bg-black/50 backdrop-blur-none flex items-center justify-center p-4 animate-in fade-in duration-100"
+        className="fixed inset-0 z-[120] overflow-y-auto bg-black/50 backdrop-blur-none flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-100"
         onClick={onClose}
       >
         <div 
@@ -131,7 +131,7 @@ export default function KeyboardShortcutsModal({
               <span className="font-extrabold">{t.shortcutsTitle} [Keyboard Help 1998]</span>
             </div>
             <button 
-              onClick={onClose}
+              onClick={onClose} 
               className="win98-btn px-2 py-0.2 text-xs font-bold text-black hover:bg-red-100"
               title="Close (Esc)"
             >
@@ -140,7 +140,7 @@ export default function KeyboardShortcutsModal({
           </div>
 
           {/* Win98 Body */}
-          <div className="p-4 space-y-4 bg-[#c0c0c0] max-h-[75vh] overflow-y-auto">
+          <div className="p-3 sm:p-4 space-y-4 bg-[#c0c0c0] max-h-[75vh] overflow-y-auto">
             {shortcutGroups.map((group, gIdx) => (
               <div key={gIdx} className="space-y-1.5">
                 <div className="text-xs font-black text-black uppercase tracking-wider flex items-center">
@@ -149,15 +149,15 @@ export default function KeyboardShortcutsModal({
                 </div>
                 <div className="win98-sunken bg-white p-2 divide-y divide-gray-200">
                   {group.items.map((item, idx) => (
-                    <div key={idx} className="p-2 flex items-center justify-between hover:bg-blue-50 text-black">
+                    <div key={idx} className="p-2 flex items-center justify-between hover:bg-blue-50 text-black gap-2">
                       <span className="text-xs font-extrabold text-black">
                         {item.description}
                       </span>
-                      <div className="flex items-center space-x-1 shrink-0 ml-3">
+                      <div className="flex items-center space-x-1 shrink-0 ml-2 sm:ml-3">
                         {item.keys.map((k, kIdx) => (
                           <kbd
                             key={kIdx}
-                            className={`win98-btn px-2 py-0.5 text-xs font-mono font-black ${
+                            className={`win98-btn px-1.5 sm:px-2 py-0.5 text-[11px] sm:text-xs font-mono font-black ${
                               item.highlight ? 'bg-rose-100 text-rose-900 border-rose-400' : 'text-black'
                             }`}
                           >
@@ -173,11 +173,11 @@ export default function KeyboardShortcutsModal({
           </div>
 
           {/* Win98 Footer */}
-          <div className="p-3 border-t border-gray-400 bg-[#c0c0c0] flex items-center justify-between text-xs font-bold text-neutral-800">
+          <div className="p-3 border-t border-gray-400 bg-[#c0c0c0] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-bold text-neutral-800">
             <span>{lang === 'zh' ? '• 输入框打字时自动暂停快捷键' : '• Shortcuts are paused while typing in text fields'}</span>
             <button
               onClick={onClose}
-              className="win98-btn px-5 py-1 text-xs font-black text-black"
+              className="win98-btn px-5 py-1 text-xs font-black text-black self-end sm:self-auto"
             >
               {lang === 'zh' ? '确定 / 关闭' : 'OK / Close'}
             </button>
@@ -189,7 +189,7 @@ export default function KeyboardShortcutsModal({
 
   return (
     <div 
-      className="fixed inset-0 z-[120] overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
+      className="fixed inset-0 z-[120] overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-150"
       onClick={onClose}
     >
       <div 
@@ -197,7 +197,7 @@ export default function KeyboardShortcutsModal({
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
               <Keyboard className="w-5 h-5" />
@@ -223,7 +223,7 @@ export default function KeyboardShortcutsModal({
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 space-y-5 max-h-[70vh] overflow-y-auto">
           {shortcutGroups.map((group, gIdx) => (
             <div key={gIdx} className="space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center">
@@ -232,15 +232,15 @@ export default function KeyboardShortcutsModal({
               </h3>
               <div className="bg-slate-950/60 rounded-xl border border-slate-800 divide-y divide-slate-800/60">
                 {group.items.map((item, idx) => (
-                  <div key={idx} className="p-3 flex items-center justify-between hover:bg-slate-800/30 transition">
+                  <div key={idx} className="p-2.5 sm:p-3 flex items-center justify-between hover:bg-slate-800/30 transition gap-2">
                     <span className="text-xs text-slate-300">
                       {item.description}
                     </span>
-                    <div className="flex items-center space-x-1 shrink-0 ml-4">
+                    <div className="flex items-center space-x-1 shrink-0 ml-2 sm:ml-4">
                       {item.keys.map((k, kIdx) => (
                         <kbd
                           key={kIdx}
-                          className={`px-2 py-1 text-[11px] font-mono rounded-lg border shadow-sm ${
+                          className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[11px] font-mono rounded-lg border shadow-sm ${
                             item.highlight
                               ? 'bg-rose-500/10 text-rose-300 border-rose-500/30'
                               : 'bg-slate-800 text-slate-200 border-slate-700'
@@ -258,11 +258,11 @@ export default function KeyboardShortcutsModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/40 flex items-center justify-between text-xs text-slate-400">
+        <div className="p-3 sm:p-4 border-t border-slate-800 bg-slate-950/40 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
           <span>{lang === 'zh' ? '输入框聚焦打字时会自动暂停快捷键，避免冲突' : 'Shortcuts are paused while typing in text inputs'}</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium transition"
+            className="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium transition self-end sm:self-auto"
           >
             {lang === 'zh' ? '我知道了' : 'Got it'}
           </button>

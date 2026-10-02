@@ -5,7 +5,7 @@ import {
   Globe, Church, Award, Sparkles, HeartCrack, Plus,
   Images, ExternalLink, FileText, Eye, Camera, Link as LinkIcon
 } from 'lucide-react';
-import { formatFullName, getLifespan, getFinalReligion } from '../utils/genealogy';
+import { formatFullName, getLifespan, getFinalReligion, isPersonLiving } from '../utils/genealogy';
 import { translations } from '../utils/i18n';
 
 export default function PersonDetailDrawer({ 
@@ -62,7 +62,7 @@ export default function PersonDetailDrawer({
       (r.person1 === spouseId && r.person2 === person.id)
     )?.status || 'spouse';
 
-    const isSpouseDeceased = detail.marriageState === 'death' || !spouse.isLiving;
+    const isSpouseDeceased = detail.marriageState === 'death' || !isPersonLiving(spouse);
     const statusTag = isSpouseDeceased 
       ? (lang === 'zh' ? '(已故)' : '(Deceased)') 
       : (lang === 'zh' ? '(现任/健在)' : '(Current)');
@@ -310,7 +310,7 @@ export default function PersonDetailDrawer({
               </div>
             </div>
 
-            {!person.isLiving && (
+            {!isPersonLiving(person) && (
               <div className={`space-y-2.5 pt-2 border-t ${theme === 'win98' ? 'border-gray-300' : 'border-slate-800/60'}`}>
                 <div className="flex items-start space-x-3 text-sm">
                   <Calendar className="w-4 h-4 text-rose-700 mt-0.5 shrink-0" />
@@ -333,7 +333,7 @@ export default function PersonDetailDrawer({
               </div>
             )}
 
-            {person.isLiving && (
+            {isPersonLiving(person) && (
               <div className={theme === 'win98'
                 ? 'flex items-center space-x-2 text-xs font-black text-emerald-950 bg-emerald-100 px-2.5 py-1 rounded border border-emerald-400'
                 : 'flex items-center space-x-2 text-xs text-emerald-400 bg-emerald-500/10 px-2.5 py-1.5 rounded-lg border border-emerald-500/20'

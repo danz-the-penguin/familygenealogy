@@ -137,7 +137,7 @@ export default function TimelineView({
       theme === 'win98' ? 'bg-[#008080] text-black select-none' : 'bg-slate-950 text-white'
     }`}>
       {/* Header & Filter Toolbar */}
-      <div className={`p-4 sm:p-5 ${
+      <div className={`p-3 sm:p-5 ${
         theme === 'win98' ? 'bg-[#c0c0c0] border-b-2 border-gray-400 shadow-md' : 'border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md'
       }`}>
         <div className="max-w-4xl mx-auto space-y-3">
@@ -224,7 +224,7 @@ export default function TimelineView({
       </div>
 
       {/* Timeline Stream */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+      <div className="flex-1 overflow-y-auto p-2.5 sm:p-6">
         <div className={`max-w-4xl mx-auto relative pl-6 before:absolute before:left-3 before:top-4 before:bottom-4 before:w-0.5 ${
           theme === 'win98' ? 'before:bg-black/50' : 'before:bg-slate-800'
         }`}>

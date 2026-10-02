@@ -3,7 +3,7 @@ import {
   ZoomIn, ZoomOut, RotateCcw, User, Heart, GitFork, Users, 
   Plus, Eye, Sparkles, HeartCrack, Award, Globe, Edit, Search
 } from 'lucide-react';
-import { formatFullName, getLifespan } from '../utils/genealogy';
+import { formatFullName, getLifespan, isPersonLiving } from '../utils/genealogy';
 import { translations } from '../utils/i18n';
 
 export default function FamilyTreeVisualizer({
@@ -23,16 +23,17 @@ export default function FamilyTreeVisualizer({
 }) {
   const t = translations[lang] || translations.en;
   const containerRef = useRef(null);
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(() => (typeof window !== 'undefined' && window.innerWidth < 640 ? 0.75 : 1));
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const touchStartRef = useRef({ x: 0, y: 0, dist: 0, initialZoom: 1 });
   const [magnifyOnHover, setMagnifyOnHover] = useState(true);
 
   const rootPerson = personsMap.get(rootPersonId) || persons[0];
 
   const handleReset = () => {
-    setZoom(1);
+    setZoom(typeof window !== 'undefined' && window.innerWidth < 640 ? 0.75 : 1);
     setPan({ x: 0, y: 0 });
   };
 
@@ -53,6 +54,49 @@ export default function FamilyTreeVisualizer({
   };
 
   const handleMouseUp = () => setIsDragging(false);
+
+  // Mobile Touch Gestures: Single touch panning + Two finger pinch to zoom
+  const handleTouchStart = (e) => {
+    if (e.target.closest('button') || e.target.closest('input') || e.target.closest('select')) {
+      return;
+    }
+    if (e.touches.length === 1) {
+      setIsDragging(true);
+      const touch = e.touches[0];
+      setDragStart({ x: touch.clientX - pan.x, y: touch.clientY - pan.y });
+    } else if (e.touches.length === 2) {
+      setIsDragging(false);
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      touchStartRef.current = { dist, initialZoom: zoom };
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 1 && isDragging) {
+      const touch = e.touches[0];
+      setPan({
+        x: touch.clientX - dragStart.x,
+        y: touch.clientY - dragStart.y
+      });
+    } else if (e.touches.length === 2 && touchStartRef.current.dist) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const factor = dist / touchStartRef.current.dist;
+      const newZoom = Math.min(Math.max(touchStartRef.current.initialZoom * factor, 0.4), 2.0);
+      setZoom(newZoom);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    touchStartRef.current = { dist: 0, initialZoom: 1 };
+  };
+
   const handleZoomIn = () => setZoom(z => Math.min(z + 0.15, 2.0));
   const handleZoomOut = () => setZoom(z => Math.max(z - 0.15, 0.4));
 
@@ -140,19 +184,19 @@ export default function FamilyTreeVisualizer({
     <div className={`flex-1 flex flex-col h-full overflow-hidden select-none relative ${theme === 'win98' ? 'bg-[#008080] text-black' : 'bg-slate-950 text-white'}`}>
       
       {/* Top Floating Control Bar */}
-      <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
+      <div className="absolute top-2 left-2 right-2 sm:top-4 sm:left-4 sm:right-4 z-20 flex flex-wrap items-center justify-between gap-1.5 sm:gap-3 pointer-events-none">
         
         {/* Left: Root Person Selector */}
-        <div className={`pointer-events-auto flex items-center space-x-2 px-3 py-2 shadow-xl ${
+        <div className={`pointer-events-auto flex items-center space-x-1.5 sm:space-x-2 px-2 py-1.5 sm:px-3 sm:py-2 shadow-xl ${
           theme === 'win98' ? 'win98-box' : 'bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-800'
         }`}>
-          <span className={`text-xs font-bold uppercase pl-1 ${theme === 'win98' ? 'text-black' : 'text-slate-400'}`}>
+          <span className={`text-[11px] sm:text-xs font-bold uppercase pl-0.5 sm:pl-1 ${theme === 'win98' ? 'text-black' : 'text-slate-400'}`}>
             {t.subject}:
           </span>
           <select
             value={rootPerson.id}
             onChange={e => onSetRootPerson(e.target.value)}
-            className={`text-xs md:text-sm font-bold px-3 py-1.5 focus:outline-none max-w-xs truncate ${
+            className={`text-xs md:text-sm font-bold px-2 py-1 sm:px-3 sm:py-1.5 focus:outline-none max-w-[125px] sm:max-w-xs truncate ${
               theme === 'win98' 
                 ? 'win98-sunken text-black bg-white cursor-pointer' 
                 : 'bg-slate-800 text-white rounded-xl border border-slate-700 focus:border-indigo-500'
@@ -164,7 +208,7 @@ export default function FamilyTreeVisualizer({
               </option>
             ))}
           </select>
-          <span className={`text-xs px-2 py-1 font-bold ${
+          <span className={`hidden sm:inline-block text-xs px-2 py-1 font-bold ${
             theme === 'win98' 
               ? 'win98-sunken bg-yellow-100 text-black border border-yellow-500' 
               : 'text-indigo-400 bg-indigo-500/10 rounded-lg border border-indigo-500/20'
@@ -174,42 +218,42 @@ export default function FamilyTreeVisualizer({
         </div>
 
         {/* Right: Zoom & Reset Controls */}
-        <div className={`pointer-events-auto flex items-center space-x-1.5 p-1.5 shadow-xl ${
+        <div className={`pointer-events-auto flex items-center space-x-1 sm:space-x-1.5 p-1 sm:p-1.5 shadow-xl ${
           theme === 'win98' ? 'win98-box' : 'bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-800'
         }`}>
           <button
             onClick={handleZoomIn}
             title="Zoom In"
-            className={theme === 'win98' ? 'win98-btn p-1.5 font-bold' : 'p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition'}
+            className={theme === 'win98' ? 'win98-btn p-1 sm:p-1.5 font-bold' : 'p-1.5 sm:p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition'}
           >
-            <ZoomIn className="w-4 h-4" />
+            <ZoomIn className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
           <button
             onClick={handleZoomOut}
             title="Zoom Out"
-            className={theme === 'win98' ? 'win98-btn p-1.5 font-bold' : 'p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition'}
+            className={theme === 'win98' ? 'win98-btn p-1.5 font-bold' : 'p-1.5 sm:p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition'}
           >
-            <ZoomOut className="w-4 h-4" />
+            <ZoomOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
-          <span className={`text-xs font-mono font-bold px-2 py-0.5 ${theme === 'win98' ? 'win98-sunken bg-white text-black' : 'text-slate-400'}`}>
+          <span className={`text-[11px] sm:text-xs font-mono font-bold px-1.5 py-0.5 ${theme === 'win98' ? 'win98-sunken bg-white text-black' : 'text-slate-400'}`}>
             {Math.round(zoom * 100)}%
           </span>
           <button
             onClick={handleReset}
             title="Reset View"
-            className={theme === 'win98' ? 'win98-btn p-1.5 font-bold' : 'p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition'}
+            className={theme === 'win98' ? 'win98-btn p-1 sm:p-1.5 font-bold' : 'p-1.5 sm:p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition'}
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
 
-          <div className={`w-[1px] h-5 my-auto mx-0.5 ${theme === 'win98' ? 'bg-gray-400' : 'bg-slate-800'}`} />
+          <div className={`w-[1px] h-4 sm:h-5 my-auto mx-0.5 ${theme === 'win98' ? 'bg-gray-400' : 'bg-slate-800'}`} />
 
           <button
             onClick={() => setMagnifyOnHover(prev => !prev)}
             title={lang === 'zh' ? '光标悬停卡片放大 2 倍 (开/关)' : 'Magnify card 2x on hover (Toggle)'}
             className={theme === 'win98' 
-              ? `win98-btn flex items-center space-x-1.5 px-2.5 py-1 text-xs font-bold ${magnifyOnHover ? 'win98-btn-active bg-[#b0b0b0]' : ''}`
-              : `flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition ${
+              ? `win98-btn flex items-center space-x-1 sm:space-x-1.5 px-2 py-1 sm:px-2.5 sm:py-1 text-xs font-bold ${magnifyOnHover ? 'win98-btn-active bg-[#b0b0b0]' : ''}`
+              : `flex items-center space-x-1 sm:space-x-1.5 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-semibold transition ${
                   magnifyOnHover 
                     ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/50 shadow-sm shadow-indigo-500/20' 
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-transparent'
@@ -217,7 +261,7 @@ export default function FamilyTreeVisualizer({
             }
           >
             <Search className="w-3.5 h-3.5" />
-            <span>{lang === 'zh' ? '悬停放大 2x' : '2x Zoom'}</span>
+            <span className="hidden sm:inline">{lang === 'zh' ? '悬停放大 2x' : '2x Zoom'}</span>
           </button>
         </div>
       </div>
@@ -229,7 +273,10 @@ export default function FamilyTreeVisualizer({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        className={`flex-1 overflow-hidden cursor-grab ${isDragging ? 'cursor-grabbing' : ''} genealogy-grid-pattern relative`}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        className={`flex-1 overflow-hidden cursor-grab ${isDragging ? 'cursor-grabbing' : ''} genealogy-grid-pattern relative touch-none`}
       >
         <div 
           style={{
@@ -553,13 +600,15 @@ function PersonNodeCard({
                 </div>
               )}
 
-              <p className="text-xs sm:text-sm font-extrabold text-neutral-900 mt-0.5 truncate">
-                {getLifespan(person, lang)}
-              </p>
+              {(person.birthDate || person.deathDate) && (
+                <p className="text-xs sm:text-sm font-extrabold text-neutral-900 mt-0.5 truncate">
+                  {getLifespan(person, lang)}
+                </p>
+              )}
             </div>
 
             <div className="mt-1 flex items-center space-x-1.5 overflow-hidden text-xs shrink-0">
-              {person.isLiving ? (
+              {isPersonLiving(person) ? (
                 <span className="text-xs font-black px-2 py-0.5 bg-emerald-100 text-emerald-950 border border-emerald-500 rounded shrink-0">
                   {lang === 'zh' ? '在世' : 'Living'}
                 </span>
@@ -702,15 +751,24 @@ function PersonNodeCard({
               <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider ${roleBadgeColor}`}>
                 {role}
               </span>
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                isPersonLiving(person) 
+                  ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' 
+                  : 'bg-neutral-500/10 text-neutral-300 border-neutral-500/20'
+              }`}>
+                {isPersonLiving(person) ? (lang === 'zh' ? '在世' : 'Living') : (lang === 'zh' ? '已故' : 'Deceased')}
+              </span>
             </div>
 
             <h3 className={`font-bold text-white break-words line-clamp-2 leading-snug mt-1 group-hover:text-indigo-300 transition ${isRoot ? 'text-base' : 'text-sm sm:text-base'}`}>
               {formatFullName(person, lang)}
             </h3>
 
-            <p className="text-xs sm:text-sm text-slate-300 mt-1 truncate">
-              {getLifespan(person, lang)}
-            </p>
+            {(person.birthDate || person.deathDate) && (
+              <p className="text-xs sm:text-sm text-slate-300 mt-1 truncate">
+                {getLifespan(person, lang)}
+              </p>
+            )}
           </div>
 
           {person.occupation && (

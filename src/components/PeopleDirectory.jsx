@@ -3,7 +3,7 @@ import {
   Search, User, MapPin, Calendar, Briefcase, Tag, GitFork, 
   Users, Eye, Plus, Filter, ShieldCheck, Heart, Globe, Award, Church, Edit, Layers
 } from 'lucide-react';
-import { formatFullName, getLifespan, normalizeSurname, groupPersonsBySurname } from '../utils/genealogy';
+import { formatFullName, getLifespan, normalizeSurname, groupPersonsBySurname, isPersonLiving } from '../utils/genealogy';
 import { translations } from '../utils/i18n';
 
 export default function PeopleDirectory({ 
@@ -73,8 +73,8 @@ export default function PeopleDirectory({
 
       if (surnameFilter !== 'all' && norm.groupKey !== surnameFilter) return false;
       if (genderFilter !== 'all' && p.gender !== genderFilter) return false;
-      if (livingFilter === 'living' && !p.isLiving) return false;
-      if (livingFilter === 'deceased' && p.isLiving) return false;
+      if (livingFilter === 'living' && !isPersonLiving(p)) return false;
+      if (livingFilter === 'deceased' && isPersonLiving(p)) return false;
       if (ethnicityFilter !== 'all' && p.ethnicity !== ethnicityFilter) return false;
       if (selectedTag !== 'all' && !(p.tags || []).includes(selectedTag)) return false;
 
@@ -109,7 +109,7 @@ export default function PeopleDirectory({
               </span>
             </div>
             <span className="text-[11px] font-mono opacity-90 uppercase font-bold shrink-0 ml-2">
-              {person.isLiving ? (lang === 'zh' ? '在世' : 'Living') : (lang === 'zh' ? '已故' : 'Deceased')}
+              {isPersonLiving(person) ? (lang === 'zh' ? '在世' : 'Living') : (lang === 'zh' ? '已故' : 'Deceased')}
             </span>
           </div>
 
@@ -144,12 +144,14 @@ export default function PeopleDirectory({
                     ✝ {person.christianName}
                   </div>
                 )}
-                <p className="text-xs sm:text-sm font-extrabold text-neutral-900 mt-0.5 truncate">
-                  {getLifespan(person, lang)}
-                </p>
+                {(person.birthDate || person.deathDate) && (
+                  <p className="text-xs sm:text-sm font-extrabold text-neutral-900 mt-0.5 truncate">
+                    {getLifespan(person, lang)}
+                  </p>
+                )}
               </div>
               <div className="mt-1 flex items-center space-x-1.5 overflow-hidden text-xs shrink-0">
-                {person.isLiving ? (
+                {isPersonLiving(person) ? (
                   <span className="text-xs font-black px-2 py-0.5 bg-emerald-100 text-emerald-950 border border-emerald-500 rounded shrink-0">
                     {lang === 'zh' ? '在世' : 'Living'}
                   </span>
@@ -231,6 +233,13 @@ export default function PeopleDirectory({
                   <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${genderBadge}`}>
                     {person.gender === 'female' ? (lang === 'zh' ? '女' : 'Female') : (lang === 'zh' ? '男' : 'Male')}
                   </span>
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                    isPersonLiving(person) 
+                      ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' 
+                      : 'bg-neutral-500/10 text-neutral-300 border-neutral-500/20'
+                  }`}>
+                    {isPersonLiving(person) ? (lang === 'zh' ? '在世' : 'Living') : (lang === 'zh' ? '已故' : 'Deceased')}
+                  </span>
                   {norm.isPatronymic && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">
                       bin/binti
@@ -246,9 +255,11 @@ export default function PeopleDirectory({
                     </span>
                   )}
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  {getLifespan(person, lang)}
-                </p>
+                {(person.birthDate || person.deathDate) && (
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {getLifespan(person, lang)}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -451,7 +462,7 @@ export default function PeopleDirectory({
       </div>
 
       {/* Grid of Persons */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-2.5 sm:p-4 md:p-6">
         <div className="max-w-6xl mx-auto">
           {filtered.length === 0 ? (
             <div className="text-center py-20 bg-slate-900/30 rounded-2xl border border-slate-800/60 p-8">

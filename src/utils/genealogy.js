@@ -228,12 +228,29 @@ export function formatVerboseDate(rawDate, lang = 'en') {
 }
 
 /**
+ * Authoritatively determine whether a person is considered living.
+ * A person is deceased if:
+ * 1. They have an explicit death date.
+ * 2. Or isLiving is explicitly false.
+ * 3. Or their birth year was > 115 years ago (human lifespan threshold).
+ */
+export function isPersonLiving(person) {
+  if (!person) return false;
+  if (person.deathDate && String(person.deathDate).trim() !== '') return false;
+  if (person.isLiving === false) return false;
+  const bYear = extractYear(person.birthDate);
+  if (bYear && (new Date().getFullYear() - bYear > 115)) return false;
+  return person.isLiving === true || person.isLiving === undefined;
+}
+
+/**
  * Calculate age or lifespan string (handles year-only or full dates)
  */
 export function getLifespan(person, lang = 'en') {
   if (!person) return '';
   const birthYear = extractYear(person.birthDate);
   const deathYear = extractYear(person.deathDate);
+  const living = isPersonLiving(person);
 
   if (birthYear && deathYear) {
     const age = deathYear - birthYear;
@@ -241,20 +258,20 @@ export function getLifespan(person, lang = 'en') {
       ? `${birthYear} – ${deathYear} (享年${age}岁)`
       : `${birthYear} – ${deathYear} (aged ${age})`;
   }
-  if (birthYear && person.isLiving) {
+  if (birthYear && living) {
     const currentYear = new Date().getFullYear();
     const age = currentYear - birthYear;
     return lang === 'zh'
       ? `${birthYear}年出生 (${age}岁)`
       : `b. ${birthYear} (age ${age})`;
   }
-  if (birthYear) {
-    return lang === 'zh' ? `${birthYear}年出生` : `b. ${birthYear}`;
+  if (birthYear && !living) {
+    return lang === 'zh' ? `${birthYear}年出生 (已故)` : `b. ${birthYear} (Deceased)`;
   }
   if (deathYear) {
     return lang === 'zh' ? `卒于${deathYear}年` : `d. ${deathYear}`;
   }
-  return person.isLiving ? (lang === 'zh' ? '健在' : 'Living') : (lang === 'zh' ? '已故' : 'Deceased');
+  return living ? (lang === 'zh' ? '在世' : 'Living') : (lang === 'zh' ? '已故' : 'Deceased');
 }
 
 /**
@@ -1533,7 +1550,8 @@ export function computeGenealogyStats(persons = []) {
   let maxAge = -1;
 
   persons.forEach(p => {
-    if (p.isLiving) livingCount++;
+    const living = isPersonLiving(p);
+    if (living) livingCount++;
     else deceasedCount++;
 
     if (p.adoptionStatus === 'adopted') adoptedCount++;
@@ -1582,7 +1600,7 @@ export function computeGenealogyStats(persons = []) {
         maxAge = age;
         oldestPerson = { ...p, age };
       }
-    } else if (bYear && p.isLiving) {
+    } else if (bYear && living) {
       const age = new Date().getFullYear() - bYear;
       if (age > maxAge) {
         maxAge = age;

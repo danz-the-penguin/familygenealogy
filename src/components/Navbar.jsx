@@ -47,44 +47,25 @@ export default function Navbar({
     return (
       <header className="win98-box z-30 shrink-0 select-none border-b-2 border-gray-400">
         {/* Win98 Top Window Titlebar */}
-        <div className="win98-title-navy px-3 py-1 flex items-center justify-between text-xs font-bold text-white select-none">
-          <div className="flex items-center space-x-2">
-            <span className="text-sm">🌳</span>
-            <span className="tracking-wide">
+        <div className="win98-title-navy px-2.5 sm:px-3 py-1 flex items-center justify-between text-xs font-bold text-white select-none">
+          <div className="flex items-center space-x-1.5 min-w-0">
+            <span className="text-sm shrink-0">🌳</span>
+            <span className="tracking-wide truncate">
               {lang === 'zh' ? '家族世系谱牒系统' : 'Family Genealogy & Kinship System'} — [{persons.length} {lang === 'zh' ? '位族人资料' : 'Members Archive'}]
             </span>
           </div>
-          <div className="flex items-center space-x-2 text-[11px] font-mono opacity-85">
+          <div className="hidden sm:flex items-center space-x-2 text-[11px] font-mono opacity-85 shrink-0">
             <span>{lang === 'zh' ? '世系档案库' : 'Heritage Archive'}</span>
           </div>
         </div>
 
-        {/* Win98 Classic Menu Bar */}
-        <div className="bg-[#c0c0c0] border-b border-gray-400 px-3 py-0.5 flex items-center space-x-4 text-xs font-bold text-black">
-          <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.2 rounded cursor-pointer" onClick={() => onViewChange('tree')}>
-            <u>F</u>ile
-          </span>
-          <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.2 rounded cursor-pointer" onClick={() => onViewChange('explorer')}>
-            <u>E</u>dit
-          </span>
-          <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.2 rounded cursor-pointer" onClick={() => onViewChange('directory')}>
-            <u>V</u>iew
-          </span>
-          <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.2 rounded cursor-pointer" onClick={onOpenShortcuts}>
-            <u>T</u>ools
-          </span>
-          <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.2 rounded cursor-pointer" onClick={() => onViewChange('tutorial')}>
-            <u>H</u>elp
-          </span>
-        </div>
-
         {/* Win98 3D Toolbar */}
-        <div className="bg-[#c0c0c0] px-2 py-1 flex flex-wrap items-center justify-between gap-1 text-black">
+        <div className="bg-[#c0c0c0] px-2 py-1 flex flex-wrap items-center justify-between gap-1.5 text-black">
           {/* Left View Buttons */}
-          <div className="flex items-center space-x-1 overflow-x-auto">
+          <div className="flex items-center space-x-1 overflow-x-auto no-scrollbar scrollbar-none max-w-full py-0.5">
             <button
               onClick={() => onViewChange('tree')}
-              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 ${
+              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 shrink-0 ${
                 currentView === 'tree' ? 'win98-btn-active bg-[#d4d0c8]' : ''
               }`}
             >
@@ -94,7 +75,7 @@ export default function Navbar({
 
             <button
               onClick={() => onViewChange('explorer')}
-              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 ${
+              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 shrink-0 ${
                 currentView === 'explorer' ? 'win98-btn-active bg-[#d4d0c8]' : ''
               }`}
             >
@@ -104,7 +85,7 @@ export default function Navbar({
 
             <button
               onClick={() => onViewChange('directory')}
-              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 ${
+              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 shrink-0 ${
                 currentView === 'directory' ? 'win98-btn-active bg-[#d4d0c8]' : ''
               }`}
             >
@@ -114,7 +95,7 @@ export default function Navbar({
 
             <button
               onClick={() => onViewChange('timeline')}
-              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 ${
+              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 shrink-0 ${
                 currentView === 'timeline' ? 'win98-btn-active bg-[#d4d0c8]' : ''
               }`}
             >
@@ -124,7 +105,7 @@ export default function Navbar({
 
             <button
               onClick={() => onViewChange('stats')}
-              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 ${
+              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 shrink-0 ${
                 currentView === 'stats' ? 'win98-btn-active bg-[#d4d0c8]' : ''
               }`}
             >
@@ -134,7 +115,7 @@ export default function Navbar({
 
             <button
               onClick={() => onViewChange('gallery')}
-              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 ${
+              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 shrink-0 ${
                 currentView === 'gallery' ? 'win98-btn-active bg-[#d4d0c8]' : ''
               }`}
             >
@@ -144,12 +125,21 @@ export default function Navbar({
 
             <button
               onClick={() => onViewChange('tutorial')}
-              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 ${
+              className={`win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 shrink-0 ${
                 currentView === 'tutorial' ? 'win98-btn-active bg-[#d4d0c8]' : ''
               }`}
             >
               <BookOpen className="w-3.5 h-3.5 text-blue-900" />
               <span>{t.tutorialView}</span>
+            </button>
+
+            <button
+              onClick={onOpenShortcuts}
+              className="win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 shrink-0"
+              title={lang === 'zh' ? '键盘快捷键指南' : 'Keyboard Shortcuts'}
+            >
+              <Keyboard className="w-3.5 h-3.5 text-neutral-900" />
+              <span>{lang === 'zh' ? '快捷键' : 'Shortcuts'}</span>
             </button>
           </div>
 
@@ -379,7 +369,7 @@ export default function Navbar({
 
           <button
             onClick={() => onViewChange('tutorial')}
-            className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+            className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
               currentView === 'tutorial'
                 ? 'bg-indigo-600 text-white shadow-md'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
@@ -387,6 +377,15 @@ export default function Navbar({
           >
             <BookOpen className="w-3.5 h-3.5" />
             <span>{t.tutorialView}</span>
+          </button>
+
+          <button
+            onClick={onOpenShortcuts}
+            className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0"
+            title={lang === 'zh' ? '键盘快捷键指南' : 'Keyboard Shortcuts'}
+          >
+            <Keyboard className="w-3.5 h-3.5" />
+            <span>{t.shortcuts}</span>
           </button>
         </nav>
       </div>

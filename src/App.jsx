@@ -935,7 +935,7 @@ export default function App() {
           {/* Start Menu Dropdown */}
           {isStartMenuOpen && (
             <div 
-              className="absolute bottom-10 left-1 w-64 win98-box z-[100] shadow-2xl flex flex-row overflow-hidden animate-in slide-in-from-bottom-2 duration-150"
+              className="absolute bottom-10 left-1 w-64 max-w-[88vw] win98-box z-[100] shadow-2xl flex flex-row overflow-hidden animate-in slide-in-from-bottom-2 duration-150"
               onClick={e => e.stopPropagation()}
             >
               {/* Vertical Windows 98 Banner on Left */}
@@ -1046,7 +1046,7 @@ export default function App() {
           )}
 
           {/* Left: Start Button + Task Tabs */}
-          <div className="flex items-center space-x-1.5 overflow-x-auto">
+          <div className="flex items-center space-x-1 sm:space-x-1.5 overflow-x-auto no-scrollbar scrollbar-none min-w-0 flex-1 mr-1">
             {/* Start Button */}
             <button
               onClick={() => setIsStartMenuOpen(prev => !prev)}

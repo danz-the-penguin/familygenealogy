@@ -5,7 +5,7 @@ import {
   FileText, ExternalLink, Images, Crop, Upload, Camera,
   Search, Zap
 } from 'lucide-react';
-import { formatFullName, extractYear, getLifespan } from '../utils/genealogy';
+import { formatFullName, extractYear, getLifespan, isPersonLiving } from '../utils/genealogy';
 import { translations } from '../utils/i18n';
 import GalleryPhotoPickerModal from './GalleryPhotoPickerModal';
 import ImageCropperModal from './ImageCropperModal';
@@ -131,12 +131,12 @@ export default function PersonModal({
         children: Array.isArray(initialData.children) ? initialData.children : [],
         tags: Array.isArray(initialData.tags) ? initialData.tags : [],
         references: Array.isArray(initialData.references) ? initialData.references : [],
-        isLiving: initialData.isLiving ?? (initialData.deathDate ? false : true)
+        isLiving: initialData.deathDate ? false : (initialData.isLiving !== false)
       });
     } else {
       const spouseObj = defaultSpouseId ? allPersons.find(p => p.id === defaultSpouseId) : null;
       const defaultOppositeGender = spouseObj ? (spouseObj.gender === 'female' ? 'male' : 'female') : 'male';
-      const isSpouseDeceased = spouseObj ? !spouseObj.isLiving : false;
+      const isSpouseDeceased = spouseObj ? !isPersonLiving(spouseObj) : false;
       const newParents = defaultParentId ? [defaultParentId] : [];
       const newSpouses = defaultSpouseId ? [defaultSpouseId] : [];
       const initPartnerDetails = defaultSpouseId ? {
@@ -202,7 +202,7 @@ export default function PersonModal({
     const sanitizedPartnerDetails = { ...(formData.partnerDetails || {}) };
     (formData.spouses || []).forEach((spouseId, index) => {
       const spouseObj = allPersons.find(p => p.id === spouseId) || newSpousesToCreate.find(p => p.id === spouseId);
-      const isDeceased = spouseObj ? !spouseObj.isLiving : false;
+      const isDeceased = spouseObj ? !isPersonLiving(spouseObj) : false;
       const defaultOrder = 'spouse';
       
       if (!sanitizedPartnerDetails[spouseId]) {
@@ -220,6 +220,8 @@ export default function PersonModal({
         }
       }
     });
+
+    const isCurrentLiving = formData.deathDate ? false : (formData.isLiving ?? true);
 
     const payload = {
       ...formData,
@@ -247,7 +249,7 @@ export default function PersonModal({
       children: formData.children || [],
       tags: formData.tags || [],
       references: formData.references || [],
-      isLiving: formData.isLiving ?? true,
+      isLiving: isCurrentLiving,
       id: currentPersonId,
       newSpousesToCreate: newSpousesToCreate.map(ns => ({
         ...ns,
@@ -256,7 +258,7 @@ export default function PersonModal({
           ...(ns.partnerDetails || {}),
           [currentPersonId]: {
             status: 'spouse',
-            marriageState: !(formData.isLiving ?? true) ? 'death' : 'current',
+            marriageState: !isCurrentLiving ? 'death' : 'current',
             notes: ''
           }
         }
@@ -448,7 +450,7 @@ export default function PersonModal({
       lastName: ln,
       chineseName: cn,
       gender: inlineSpouse.gender || 'female',
-      isLiving: inlineSpouse.isLiving ?? true,
+      isLiving: inlineSpouse.deathDate ? false : (inlineSpouse.isLiving ?? true),
       birthDate: inlineSpouse.birthDate || '',
       deathDate: inlineSpouse.deathDate || '',
       burialPlace: inlineSpouse.burialPlace || '',
@@ -456,7 +458,7 @@ export default function PersonModal({
       partnerDetails: initialData?.id ? {
         [initialData.id]: {
           status: inlineSpouse.status === 'second_spouse' ? 'spouse' : (inlineSpouse.status === 'remarriage_after_death' ? 'spouse' : (inlineSpouse.status || 'spouse')),
-          marriageState: !(formData.isLiving ?? true) ? 'death' : (inlineSpouse.isLiving ? 'current' : 'death'),
+          marriageState: !(formData.isLiving ?? true) ? 'death' : ((inlineSpouse.deathDate || !inlineSpouse.isLiving) ? 'death' : 'current'),
           marriageDate: inlineSpouse.marriageDate || '',
           marriagePlace: inlineSpouse.marriagePlace || '',
           notes: inlineSpouse.notes || ''
@@ -559,7 +561,7 @@ export default function PersonModal({
       )
     );
     if (candidate) {
-      const isDeceased = !candidate.isLiving;
+      const isDeceased = !isPersonLiving(candidate);
       setFormData(prev => ({
         ...prev,
         spouses: Array.from(new Set([...(prev.spouses || []), candidate.id])),
@@ -710,7 +712,7 @@ export default function PersonModal({
     : 'block text-xs font-medium text-slate-300 mb-1';
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
       <div className={`relative w-full max-w-3xl overflow-hidden shadow-2xl ${
         theme === 'win98' 
           ? 'win98-box' 
@@ -1071,26 +1073,44 @@ export default function PersonModal({
 
           {/* Vital Dates, Places & Burial Site (with Year-Only toggle) */}
           <div className={isRetro ? "win98-box p-3 bg-[#c0c0c0] text-black space-y-3" : "space-y-4 pt-4 border-t border-slate-800/80"}>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div className={isRetro ? "win98-title-navy px-2.5 py-1 text-xs font-bold text-white flex items-center select-none" : "text-xs font-semibold uppercase tracking-wider text-emerald-400 flex items-center"}>
                 <Calendar className="w-3.5 h-3.5 mr-1.5" />
                 <span>{t.vitalEvents}</span>
               </div>
-              <label className="flex items-center space-x-1.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.isLiving}
-                  onChange={e => setFormData({ 
+              <div className="flex items-center space-x-1.5">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ 
                     ...formData, 
-                    isLiving: e.target.checked,
-                    deathDate: e.target.checked ? '' : formData.deathDate,
-                    deathPlace: e.target.checked ? '' : formData.deathPlace,
-                    burialPlace: e.target.checked ? '' : formData.burialPlace
+                    isLiving: true,
+                    deathDate: '',
+                    deathPlace: '',
+                    burialPlace: ''
                   })}
-                  className={isRetro ? "cursor-pointer" : "rounded border-slate-700 text-indigo-600 focus:ring-indigo-500"}
-                />
-                <span className={isRetro ? "text-xs font-bold text-black" : "text-xs text-slate-300 font-medium"}>{t.isLiving}</span>
-              </label>
+                  className={isRetro 
+                    ? `win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 ${formData.isLiving ? 'win98-btn-active bg-emerald-100 text-emerald-950 font-black' : 'text-neutral-700'}`
+                    : `px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center space-x-1 transition ${formData.isLiving ? 'bg-emerald-600 text-white shadow' : 'bg-slate-800 text-slate-400 hover:text-white'}`
+                  }
+                >
+                  <span>🌿</span>
+                  <span>{lang === 'zh' ? '在世 (健在)' : 'Living'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ 
+                    ...formData, 
+                    isLiving: false 
+                  })}
+                  className={isRetro 
+                    ? `win98-btn px-2.5 py-1 text-xs font-bold flex items-center space-x-1 ${!formData.isLiving ? 'win98-btn-active bg-neutral-200 text-black font-black' : 'text-neutral-700'}`
+                    : `px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center space-x-1 transition ${!formData.isLiving ? 'bg-rose-600 text-white shadow' : 'bg-slate-800 text-slate-400 hover:text-white'}`
+                  }
+                >
+                  <span>✝</span>
+                  <span>{lang === 'zh' ? '已故 (离世)' : 'Deceased'}</span>
+                </button>
+              </div>
             </div>
 
             {/* Birth Date / Year & Place */}
@@ -1182,7 +1202,7 @@ export default function PersonModal({
                         min="1000"
                         max="2100"
                         value={formData.deathDate}
-                        onChange={e => setFormData({ ...formData, deathDate: e.target.value })}
+                        onChange={e => setFormData({ ...formData, deathDate: e.target.value, isLiving: e.target.value ? false : formData.isLiving })}
                         placeholder="e.g. 1994 (Year only)"
                         className={inpClass}
                       />
@@ -1190,7 +1210,7 @@ export default function PersonModal({
                       <input
                         type="date"
                         value={formData.deathDate}
-                        onChange={e => setFormData({ ...formData, deathDate: e.target.value })}
+                        onChange={e => setFormData({ ...formData, deathDate: e.target.value, isLiving: e.target.value ? false : formData.isLiving })}
                         className={inpClass}
                       />
                     )}

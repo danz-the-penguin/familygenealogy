@@ -163,58 +163,58 @@ export default function GenealogyExplorer({
         </div>
 
         {/* Tab Navigation */}
-        <div className={`max-w-6xl mx-auto mt-5 flex space-x-1.5 ${
+        <div className={`max-w-6xl mx-auto mt-3 sm:mt-5 flex space-x-1.5 overflow-x-auto no-scrollbar scrollbar-none pb-0.5 ${
           theme === 'win98' ? 'border-b-2 border-gray-400' : 'border-b border-slate-800'
         }`}>
           <button
             onClick={() => setActiveTab('ancestors')}
             className={theme === 'win98'
-              ? `win98-btn px-4 py-1.5 text-xs font-bold flex items-center space-x-1.5 text-black ${activeTab === 'ancestors' ? 'win98-btn-active bg-white' : ''}`
-              : `flex items-center space-x-2 px-5 py-3 border-b-2 font-medium text-sm transition ${
+              ? `win98-btn px-3 sm:px-4 py-1.5 text-xs font-bold flex items-center space-x-1.5 text-black shrink-0 ${activeTab === 'ancestors' ? 'win98-btn-active bg-white' : ''}`
+              : `flex items-center space-x-2 px-3 sm:px-5 py-2.5 sm:py-3 border-b-2 font-medium text-xs sm:text-sm transition shrink-0 ${
                   activeTab === 'ancestors'
                     ? 'border-amber-500 text-amber-400 bg-amber-500/10 rounded-t-xl'
                     : 'border-transparent text-slate-400 hover:text-slate-200'
                 }`
             }
           >
-            <GitFork className="w-4 h-4 rotate-180" />
+            <GitFork className="w-3.5 h-3.5 sm:w-4 sm:h-4 rotate-180" />
             <span>{t.searchAncestors} ({ancestors.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('cousins')}
             className={theme === 'win98'
-              ? `win98-btn px-4 py-1.5 text-xs font-bold flex items-center space-x-1.5 text-black ${activeTab === 'cousins' ? 'win98-btn-active bg-white' : ''}`
-              : `flex items-center space-x-2 px-5 py-3 border-b-2 font-medium text-sm transition ${
+              ? `win98-btn px-3 sm:px-4 py-1.5 text-xs font-bold flex items-center space-x-1.5 text-black shrink-0 ${activeTab === 'cousins' ? 'win98-btn-active bg-white' : ''}`
+              : `flex items-center space-x-2 px-3 sm:px-5 py-2.5 sm:py-3 border-b-2 font-medium text-xs sm:text-sm transition shrink-0 ${
                   activeTab === 'cousins'
                     ? 'border-purple-500 text-purple-400 bg-purple-500/10 rounded-t-xl'
                     : 'border-transparent text-slate-400 hover:text-slate-200'
                 }`
             }
           >
-            <Users className="w-4 h-4" />
+            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>{t.searchCousins} ({cousins.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('calculator')}
             className={theme === 'win98'
-              ? `win98-btn px-4 py-1.5 text-xs font-bold flex items-center space-x-1.5 text-black ${activeTab === 'calculator' ? 'win98-btn-active bg-white' : ''}`
-              : `flex items-center space-x-2 px-5 py-3 border-b-2 font-medium text-sm transition ${
+              ? `win98-btn px-3 sm:px-4 py-1.5 text-xs font-bold flex items-center space-x-1.5 text-black shrink-0 ${activeTab === 'calculator' ? 'win98-btn-active bg-white' : ''}`
+              : `flex items-center space-x-2 px-3 sm:px-5 py-2.5 sm:py-3 border-b-2 font-medium text-xs sm:text-sm transition shrink-0 ${
                   activeTab === 'calculator'
                     ? 'border-indigo-500 text-indigo-400 bg-indigo-500/10 rounded-t-xl'
                     : 'border-transparent text-slate-400 hover:text-slate-200'
                 }`
             }
           >
-            <Compass className="w-4 h-4" />
+            <Compass className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>{t.kinshipCalculator}</span>
           </button>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-6">
         <div className="max-w-6xl mx-auto space-y-6">
 
           {/* TAB 1: ANCESTORS */}
